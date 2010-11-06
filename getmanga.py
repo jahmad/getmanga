@@ -1,6 +1,10 @@
 #!/usr/bin/env python
 """Yet another (multi-site) manga downloader"""
 
+# Copyright (c) 2010, Jamaludin Ahmad
+# Released subject to the MIT License.
+# Please see http://en.wikipedia.org/wiki/MIT_License
+
 from __future__ import division
 
 import sys
