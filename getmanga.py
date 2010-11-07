@@ -218,7 +218,7 @@ class MangaToshokan(Manga):
     """class for mangatoshokan site"""
     site = 'http://www.mangatoshokan.com'
 
-    chapters_regex = re.compile(r'href=\'(\S+)\' title="Read.*(\d+) now')
+    chapters_regex = re.compile(r'href=\'(\S+)\' .* (\d+)</a>')
     pages_regex = re.compile(r'<option value="\S+".*?>(\d+)</option>')
     image_regex = re.compile(r'dir=\'rtl\'><img src="(\S+)"')
 
@@ -260,7 +260,7 @@ class MangaAnimea(Manga):
     """class for manga animea site"""
     site = 'http://manga.animea.net'
 
-    chapters_regex = re.compile(r'<td><a href="(\S+)">.*(\d+)</a>')
+    chapters_regex = re.compile(r'href="(\S+)">[\w\s]+\s(\d+)</a>[^</li>]+')
     pages_regex = re.compile(r'<option value="\d+">(\d+)</option>')
     image_regex = re.compile(r'<img src="(\S+)" .* class="chapter_img"')
 
