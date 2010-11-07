@@ -105,7 +105,7 @@ class Manga:
     def download(self, chapter_id, chapter_dir):
         """Download and create zipped manga chapter"""
         cbz_name = os.path.join(self.directory,
-                               self._name(chapter_id, chapter_dir))
+                                self._name(chapter_id, chapter_dir))
         if os.path.isfile(cbz_name):
             sys.stdout.write('file %s exist, skipped download\n' %
                               cbz_name)
@@ -371,17 +371,18 @@ def dircheck(dir_path):
             os.makedirs(dir_path)
         except OSError, msg:
             raise MangaException(msg)
-        else:
-            return dir_path
+    return dir_path
 
 
 def cmdparse():
     """Returns parsed arguments from command line"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-s', '--site', required=True, choices=('animea',
+    parser.add_argument('-f', '--file', type=str,
+                        help='%(prog)s config file')
+    parser.add_argument('-s', '--site', choices=('animea',
                         'ble', 'fox', 'reader', 'stream', 'toshokan'),
                         help='manga site to download from')
-    parser.add_argument('-t', '--title', type=str, required=True,
+    parser.add_argument('-t', '--title', type=str,
                         help='manga title to download')
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-n', '--new', action='store_true',
@@ -399,15 +400,28 @@ def cmdparse():
                         help='show program version and exit')
     args = parser.parse_args()
 
-    if args.end:
+    if args.file:
+        if not os.path.isfile(args.file):
+            parser.print_usage()
+            sys.exit('%s: error: config file does not exit' %
+                     parser.prog)
+    elif not args.site:
+        parser.print_usage()
+        sys.exit('%s: error: argument -s/--start is required' %
+                 parser.prog)
+    elif not args.title:
+        parser.print_usage()
+        sys.exit('%s: error: argument -t/--title is required' %
+                 parser.prog)
+    elif args.end:
         if not args.begin:
             parser.print_usage()
             sys.exit('%s: error: argument -e/--end: need -s/--start' %
                      parser.prog)
         elif args.end < args.begin:
             parser.print_usage()
-            sys.exit('%s: error: argument -e/--end: should be bigger than '
-                      '-s/--start' % parser.prog)
+            sys.exit('%s: error: argument -e/--end: should be bigger'
+                     'than -s/--start' % parser.prog)
     return args
 
 
@@ -422,14 +436,17 @@ def main():
 
     args = cmdparse()
 
-    try:
-        manga = mangaclass[args.site](args.title, args.dir)
-        manga.get(chapter=args.chapter, begin=args.begin,
-                  end=args.end, new=args.new)
-    except MangaException, msg:
-        sys.exit(msg)
-    except KeyboardInterrupt:
-        sys.exit('Cancelling download... quit')
+    if args.file:
+        pass
+    else:
+        try:
+            manga = mangaclass[args.site](args.title, args.dir)
+            manga.get(chapter=args.chapter, begin=args.begin,
+                      end=args.end, new=args.new)
+        except MangaException, msg:
+            sys.exit(msg)
+        except KeyboardInterrupt:
+            sys.exit('Cancelling download... quit')
 
 
 if __name__ == '__main__':
