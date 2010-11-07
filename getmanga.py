@@ -359,15 +359,33 @@ def main():
                         help='manga site to download from')
     parser.add_argument('-t', '--title', type=str, required=True,
                         help='manga title to download')
-    parser.add_argument('-n', '--new', action='store_true',
-                        help='download the last chapter')
-    parser.add_argument('-c', '--chapter', type=int,
-                        help='chapter number to download a single chapter')
-    parser.add_argument('-b', '--begin', type=int,
-                        help='chapter number to begin on a bulk download')
+    group = parser.add_mutually_exclusive_group()
+    group.add_argument('-n', '--new', action='store_true',
+                       help='download the last chapter')
+    group.add_argument('-c', '--chapter', type=int,
+                       help='chapter number to download a single chapter')
+    group.add_argument('-b', '--begin', type=int,
+                       help='chapter number to begin on a bulk download')
     parser.add_argument('-e', '--end', type=int,
                         help='chapter number to end on a bulk download')
+    parser.add_argument('-v', '--version', action='version',
+                        version='%(prog)s 0.2',
+                        help='show program version and exit')
     args = parser.parse_args()
+
+    if args.end:
+        if not args.begin:
+            parser.print_usage()
+            sys.exit('%s: error: argument -e/--end: need -s/--start' %
+                     parser.prog)
+        elif args.end < args.begin:
+            parser.print_usage()
+            sys.exit('%s: error: argument -e/--end: should be bigger than '
+                      '-s/--start' % parser.prog)
+    if not args.new and not args.chapter and not args.begin:
+        parser.print_usage()
+        sys.exit('%s: error: you need to specify either one of -n/--new, '
+                 '-c/--chapter, or -b/--begin' % parser.prog)
 
     try:
         manga = mangaclass[args.site](args.title)
