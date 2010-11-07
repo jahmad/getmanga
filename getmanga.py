@@ -47,7 +47,14 @@ class Manga:
     def __init__(self, title=None, directory='.'):
         """Initiate manga title and download directory"""
         self.title = self._title(title)
-        self.directory = dircheck(directory)
+
+        directory = os.path.abspath(os.path.expanduser(directory))
+        if not os.path.isdir(directory):
+            try:
+                os.makedirs(directory)
+            except OSError, msg:
+                raise MangaException(msg)
+        self.directory = directory
 
     def get(self, chapter=None, begin=None, end=None, new=False):
         """Decides which action executed from user input"""
@@ -366,17 +373,6 @@ def position(key, listobj):
     for i in xrange(len(listobj)):
         if listobj[i] == key:
             return i
-
-
-def dircheck(dir_path):
-    """Create directory if not exist"""
-    dir_path = os.path.abspath(os.path.expanduser(dir_path))
-    if not os.path.isdir(dir_path):
-        try:
-            os.makedirs(dir_path)
-        except OSError, msg:
-            raise MangaException(msg)
-    return dir_path
 
 
 def cmdparse():
