@@ -408,10 +408,6 @@ def cmdparse():
             parser.print_usage()
             sys.exit('%s: error: argument -e/--end: should be bigger than '
                       '-s/--start' % parser.prog)
-    if not args.new and not args.chapter and not args.begin:
-        parser.print_usage()
-        sys.exit('%s: error: you need to specify either one of -n/--new, '
-                 '-c/--chapter, or -b/--begin' % parser.prog)
     return args
 
 
