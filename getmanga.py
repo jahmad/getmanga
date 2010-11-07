@@ -444,10 +444,10 @@ def configparse(filepath):
 def main():
     """Decide the right action from the command line"""
     mangaclass = {'animea': MangaAnimea,
-                  'ble': MangaBle,
-                  'fox': MangaFox,
-                  'reader': MangaReader,
-                  'stream': MangaStream,
+                  'mangable': MangaBle,
+                  'mangafox': MangaFox,
+                  'mangareader': MangaReader,
+                  'mangastream': MangaStream,
                   'toshokan': MangaToshokan}
 
     args = cmdparse()

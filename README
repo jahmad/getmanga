@@ -17,17 +17,17 @@ Usage:
 * Download all manga chapters available:
   getmanga.py -s {site} -t {title}
 
-  example: getmanga.py -s ble -t 'fairy tail'
+  example: getmanga.py -s mangable -t 'fairy tail'
 
 * Download the last chapter of a title:
   getmanga.py -s {site} -t {title} -n
 
-  example: getmanga.py -s stream -t one_piece -n
+  example: getmanga.py -s mangastream -t one_piece -n
 
 * Download a specific chapter of a title:
   getmanga.py -s {site} -t {title} -c {chapter}
 
-  example: getmanga.py -s reader -t bleach -c 425
+  example: getmanga.py -s mangareader -t bleach -c 425
 
 * Download multiple chapters of a title:
   getmanga.py -s {site} -t {title} -b {chapter} -e {chapter}
