@@ -436,7 +436,7 @@ def configparse(filepath):
             config.append((parser.get(title, 'site'), title,
                            parser.get(title, 'dir'),
                            parser.getboolean(title, 'new')))
-        except ConfigParser.NoOptionError, msg:
+        except Exception, msg:
             raise MangaException('Config Error: %s' % msg)
     return config
 
