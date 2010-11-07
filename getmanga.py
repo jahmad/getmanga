@@ -455,8 +455,8 @@ def main():
     try:
         if args.file:
             config = configparse(args.file)
-            for line in config:
-                site, title, directory, new = line
+            for option in config:
+                site, title, directory, new = option
                 manga = mangaclass[site](title, directory)
                 manga.get(new=new)
         else:
