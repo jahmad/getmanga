@@ -380,9 +380,9 @@ def cmdparse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=str,
                         help='%(prog)s config file')
-    parser.add_argument('-s', '--site', choices=('animea',
-                        'ble', 'fox', 'reader', 'stream', 'toshokan'),
-                        help='manga site to download from')
+    parser.add_argument('-s', '--site', choices=('animea', 'mangable',
+                        'mangafox', 'mangareader', 'mangastream',
+                        'toshokan'), help='manga site to download from')
     parser.add_argument('-t', '--title', type=str,
                         help='manga title to download')
     group = parser.add_mutually_exclusive_group()
