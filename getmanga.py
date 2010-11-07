@@ -14,6 +14,7 @@ import urllib2
 import zipfile
 import gzip
 import StringIO
+import ConfigParser
 
 try:
     import argparse
@@ -425,6 +426,21 @@ def cmdparse():
     return args
 
 
+def configparse(filepath):
+    """Returns parsed config from an ini file"""
+    parser = ConfigParser.ConfigParser()
+    parser.read(filepath)
+    config = []
+    for title in parser.sections():
+        try:
+            config.append((parser.get(title, 'site'), title,
+                           parser.get(title, 'dir'),
+                           parser.getboolean(title, 'new')))
+        except ConfigParser.NoOptionError, msg:
+            raise MangaException('Config Error: %s' % msg)
+    return config
+
+
 def main():
     """Decide the right action from the command line"""
     mangaclass = {'animea': MangaAnimea,
@@ -436,17 +452,21 @@ def main():
 
     args = cmdparse()
 
-    if args.file:
-        pass
-    else:
-        try:
+    try:
+        if args.file:
+            config = configparse(args.file)
+            for line in config:
+                site, title, directory, new = line
+                manga = mangaclass[site](title, directory)
+                manga.get(new=new)
+        else:
             manga = mangaclass[args.site](args.title, args.dir)
             manga.get(chapter=args.chapter, begin=args.begin,
                       end=args.end, new=args.new)
-        except MangaException, msg:
-            sys.exit(msg)
-        except KeyboardInterrupt:
-            sys.exit('Cancelling download... quit')
+    except MangaException, msg:
+        sys.exit(msg)
+    except KeyboardInterrupt:
+        sys.exit('Cancelling download... quit')
 
 
 if __name__ == '__main__':

@@ -35,6 +35,12 @@ Usage:
   example: getmanga.py -s toshokan -t "20th century boys" -b 230
   Note: if -e omitted, it will download trough the last chapter.
 
+Optional arguments:
+* -d/--dir: to save downloaded chapter to another directory
+* -f/--file: load config file instead of using command arguments
+  (example file included)
+  Note: only support downloading all or new chapter with this mode.
+
 Known Issues:
 * Currently doesn't support downloading a single chapter with dot
   in it (normally side stories).
