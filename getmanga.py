@@ -73,7 +73,7 @@ class Manga:
                 for chapter_id in chapter_ids[start:stop]:
                     self.download(chapter_id, chapter_dict[chapter_id])
             else:
-                raise MangaException('Can\'t begin from non-existent'
+                raise MangaException('Can\'t begin from non-existent '
                                      'chapter')
 
         else:
