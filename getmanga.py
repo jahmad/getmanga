@@ -260,7 +260,7 @@ class MangaAnimea(Manga):
     """class for manga animea site"""
     site = 'http://manga.animea.net'
 
-    chapters_regex = re.compile(r'href="(\S+)">[\w\s]+\s(\d+)</a>[^</li>]+')
+    chapters_regex = re.compile(r'href="(\S+)">["\s\w]+\s(\d+)</a>\s')
     pages_regex = re.compile(r'<option value="\d+">(\d+)</option>')
     image_regex = re.compile(r'<img src="(\S+)" .* class="chapter_img"')
 
@@ -270,11 +270,15 @@ class MangaAnimea(Manga):
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
-        return '%s/%s.html' % (self.site, self.title)
+        return '%s/%s.html?skip=1' % (self.site, self.title)
 
     def _pageurl(self, chapter_dir, page='1'):
         """Returns manga image page url"""
         return re.sub(r'.html$', '-page-%s.html' % page, chapter_dir)
+
+    def _verify(self, chapter_dir):
+        """Returns boolean status of a chapter validity"""
+        return re.search(self.title, chapter_dir)
 
 
 class MangaReader(Manga):
