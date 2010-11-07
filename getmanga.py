@@ -363,15 +363,8 @@ def position(key, listobj):
             return i
 
 
-def main():
-    """Parsing user input and decide the right action"""
-    mangaclass = {'animea': MangaAnimea,
-                  'ble': MangaBle,
-                  'fox': MangaFox,
-                  'reader': MangaReader,
-                  'stream': MangaStream,
-                  'toshokan': MangaToshokan}
-
+def cmdparse():
+    """Returns parsed arguments from command line"""
     parser = argparse.ArgumentParser()
     parser.add_argument('-s', '--site', required=True, choices=('animea',
                         'ble', 'fox', 'reader', 'stream', 'toshokan'),
@@ -411,6 +404,19 @@ def main():
         parser.print_usage()
         sys.exit('%s: error: download directory does not exist' %
                  parser.prog)
+    return args
+
+
+def main():
+    """Decide the right action from the command line"""
+    mangaclass = {'animea': MangaAnimea,
+                  'ble': MangaBle,
+                  'fox': MangaFox,
+                  'reader': MangaReader,
+                  'stream': MangaStream,
+                  'toshokan': MangaToshokan}
+
+    args = cmdparse()
 
     try:
         manga = mangaclass[args.site](args.title, args.dir)
