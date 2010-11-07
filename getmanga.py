@@ -28,6 +28,11 @@ if sys.version_info < (2, 7):
                  'to run this script')
 
 
+class MangaException(Exception):
+    """Exception class for manga"""
+    pass
+
+
 class Manga:
     """Base class for manga downloading"""
     site = None
@@ -55,7 +60,7 @@ class Manga:
             if chapter_id in chapter_ids:
                 self.download(chapter_id, chapter_dict[chapter_id])
             else:
-                sys.exit('Chapter do not exist')
+                raise MangaException('Chapter does not exist')
 
         elif begin:
             start = position(self._id(begin), chapter_ids)
@@ -68,7 +73,8 @@ class Manga:
                 for chapter_id in chapter_ids[start:stop]:
                     self.download(chapter_id, chapter_dict[chapter_id])
             else:
-                sys.exit('The beginning has not even come yet....')
+                raise MangaException('Can\'t begin from non-existent'
+                                     'chapter')
 
         else:
             for chapter_id, chapter_dir in chapter_dict.iteritems():
@@ -92,7 +98,7 @@ class Manga:
         if chapter_dict:
             return chapter_dict
         else:
-            sys.exit('%s: No such title' % self.title)
+            raise MangaException('%s: No such title' % self.title)
 
     def download(self, chapter_id, chapter_dir):
         """Download and create zipped manga chapter"""
@@ -298,8 +304,7 @@ def urlopen(url):
             response = urllib2.urlopen(request, timeout=15)
             data = response.read()
         except urllib2.HTTPError, msg:
-            sys.stdout.write('HTTP Error: %s - %s\n' % (msg.code, url))
-            break
+            raise MangaException('HTTP Error: %s - %s\n' % (msg.code, url))
         except Exception:
             #what may goes here: urllib2.URLError, socket.timeout,
             #                    httplib.BadStatusLine
@@ -320,7 +325,7 @@ def urlopen(url):
     if data:
         return data
     else:
-        sys.exit('Failed to download %s' % url)
+        raise MangaException('Failed to retrieve %s' % url)
 
 
 def progress(num, total):
@@ -391,6 +396,8 @@ def main():
         manga = mangaclass[args.site](args.title)
         manga.get(chapter=args.chapter, begin=args.begin,
                   end=args.end, new=args.new)
+    except MangaException, msg:
+        sys.exit(msg)
     except KeyboardInterrupt:
         sys.exit('Cancelling download... quit')
 
