@@ -46,7 +46,7 @@ class Manga:
     def __init__(self, title=None, directory='.'):
         """Initiate manga title and download directory"""
         self.title = self._title(title)
-        self.directory = directory
+        self.directory = dircheck(directory)
 
     def get(self, chapter=None, begin=None, end=None, new=False):
         """Decides which action executed from user input"""
@@ -363,6 +363,18 @@ def position(key, listobj):
             return i
 
 
+def dircheck(dir_path):
+    """Create directory if not exist"""
+    dir_path = os.path.abspath(os.path.expanduser(dir_path))
+    if not os.path.isdir(dir_path):
+        try:
+            os.makedirs(dir_path)
+        except OSError, msg:
+            raise MangaException(msg)
+        else:
+            return dir_path
+
+
 def cmdparse():
     """Returns parsed arguments from command line"""
     parser = argparse.ArgumentParser()
@@ -400,10 +412,6 @@ def cmdparse():
         parser.print_usage()
         sys.exit('%s: error: you need to specify either one of -n/--new, '
                  '-c/--chapter, or -b/--begin' % parser.prog)
-    if not os.path.isdir(args.dir):
-        parser.print_usage()
-        sys.exit('%s: error: download directory does not exist' %
-                 parser.prog)
     return args
 
 
