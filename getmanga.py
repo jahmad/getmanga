@@ -7,6 +7,7 @@
 
 from __future__ import division
 
+import os
 import sys
 import re
 import urllib2
@@ -42,9 +43,10 @@ class Manga:
     pages_regex = None
     image_regex = None
 
-    def __init__(self, title=None):
-        """Initiate manga title"""
+    def __init__(self, title=None, directory='.'):
+        """Initiate manga title and download directory"""
         self.title = self._title(title)
+        self.directory = directory
 
     def get(self, chapter=None, begin=None, end=None, new=False):
         """Decides which action executed from user input"""
@@ -102,23 +104,35 @@ class Manga:
 
     def download(self, chapter_id, chapter_dir):
         """Download and create zipped manga chapter"""
-        filename = self._name(chapter_id, chapter_dir)
-        chapter_html = urlopen(self._pageurl(chapter_dir))
-        pages = self.pages_regex.findall(chapter_html)
-        pages = sorted(list(set(pages)), key=int)
+        cbz_name = os.path.join(self.directory,
+                               self._name(chapter_id, chapter_dir))
+        if os.path.isfile(cbz_name):
+            sys.stdout.write('file %s exist, skipped download\n' %
+                              cbz_name)
+        else:
+            tmp_name = '%s.tmp' % cbz_name
+            chapter_html = urlopen(self._pageurl(chapter_dir))
+            pages = self.pages_regex.findall(chapter_html)
+            pages = sorted(list(set(pages)), key=int)
 
-        sys.stdout.write('downloading %s %s:\n' % (self.title, chapter_id))
-        cbz = zipfile.ZipFile(filename, mode='w',
-                               compression=zipfile.ZIP_DEFLATED)
-        progress(0, pages[-1])
-        for page in pages:
-            page_html = urlopen(self._pageurl(chapter_dir, page))
-            image_url = self.image_regex.findall(page_html)[0]
-            image_name = re.search(r'([\w\.]+)$', image_url).group()
-            image_file = urlopen(image_url)
-            cbz.writestr(image_name, image_file)
-            progress(page, pages[-1])
-        cbz.close()
+            sys.stdout.write('downloading %s %s:\n' %
+                             (self.title, chapter_id))
+            try:
+                cbz = zipfile.ZipFile(tmp_name, mode='w',
+                                      compression=zipfile.ZIP_DEFLATED)
+                progress(0, pages[-1])
+                for page in pages:
+                    page_html = urlopen(self._pageurl(chapter_dir, page))
+                    image_url = self.image_regex.findall(page_html)[0]
+                    image_name = re.search(r'([\w\.]+)$', image_url).group()
+                    image_file = urlopen(image_url)
+                    cbz.writestr(image_name, image_file)
+                    progress(page, pages[-1])
+                cbz.close()
+                os.rename(tmp_name, cbz_name)
+            except MangaException, msg:
+                os.remove(tmp_name)
+                raise MangaException(msg)
 
     def _title(self, title):
         """Return the right manga title from user input"""
@@ -373,6 +387,8 @@ def main():
                        help='chapter number to begin on a bulk download')
     parser.add_argument('-e', '--end', type=int,
                         help='chapter number to end on a bulk download')
+    parser.add_argument('-d', '--dir', type=str, default='.',
+                        help='download directory')
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s 0.2',
                         help='show program version and exit')
@@ -391,9 +407,13 @@ def main():
         parser.print_usage()
         sys.exit('%s: error: you need to specify either one of -n/--new, '
                  '-c/--chapter, or -b/--begin' % parser.prog)
+    if not os.path.isdir(args.dir):
+        parser.print_usage()
+        sys.exit('%s: error: download directory does not exist' %
+                 parser.prog)
 
     try:
-        manga = mangaclass[args.site](args.title)
+        manga = mangaclass[args.site](args.title, args.dir)
         manga.get(chapter=args.chapter, begin=args.begin,
                   end=args.end, new=args.new)
     except MangaException, msg:
