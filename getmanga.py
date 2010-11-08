@@ -428,7 +428,10 @@ def cmdparse():
 
 def configparse(filepath):
     """Returns parsed config from an ini file"""
-    parser = ConfigParser.ConfigParser()
+    if sys.version_info >= (2, 6):
+        parser = ConfigParser.SafeConfigParser(dict_type=OrderedDict)
+    else:
+        parser = ConfigParser.SafeConfigParser()
     parser.read(filepath)
     config = []
     for title in parser.sections():
