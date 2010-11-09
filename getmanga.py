@@ -5,6 +5,11 @@
 # Released subject to the MIT License.
 # Please see http://en.wikipedia.org/wiki/MIT_License
 
+# Changes
+# version 0.3 : download threading
+# version 0.2 : config support for batch download
+# version 0.1 : initial release
+
 from __future__ import division
 
 import os
@@ -15,6 +20,8 @@ import zipfile
 import gzip
 import StringIO
 import ConfigParser
+import threading
+import Queue
 
 try:
     import argparse
@@ -126,21 +133,37 @@ class Manga:
             sys.stdout.write('downloading %s %s:\n' %
                              (self.title, chapter_id))
             try:
+                progress(0, len(pages))
+                threads, semaphore, queue = ([], threading.Semaphore(4),
+                                             Queue.Queue())
                 cbz = zipfile.ZipFile(tmp_name, mode='w',
                                       compression=zipfile.ZIP_DEFLATED)
-                progress(0, len(pages))
                 for page in pages:
-                    page_html = urlopen(self._pageurl(chapter_dir, page))
-                    image_url = self.image_regex.findall(page_html)[0]
-                    image_name = re.search(r'([\w\.]+)$', image_url).group()
-                    image_file = urlopen(image_url)
-                    cbz.writestr(image_name, image_file)
-                    progress(position(page, pages) + 1, len(pages))
+                    thread = threading.Thread(target=self._pagedownload,
+                                              args=(semaphore, queue,
+                                                    chapter_dir, page))
+                    thread.start()
+                    threads.append(thread)
+                for thread in threads:
+                    thread.join()
+                    image = queue.get()
+                    cbz.writestr(image[0], image[1])
+                    progress(len(cbz.filelist), len(pages))
                 cbz.close()
                 os.rename(tmp_name, cbz_name)
-            except MangaException, msg:
+            except Exception, msg:
                 os.remove(tmp_name)
                 raise MangaException(msg)
+
+    def _pagedownload(self, semaphore, queue, chapter_dir, page):
+        """docstring"""
+        semaphore.acquire()
+        page_html = urlopen(self._pageurl(chapter_dir, page))
+        image_url = self.image_regex.findall(page_html)[0]
+        image_name = re.search(r'([\w\.]+)$', image_url).group()
+        image_file = urlopen(image_url)
+        queue.put((image_name, image_file))
+        semaphore.release()
 
     def _title(self, title):
         """Return the right manga title from user input"""
@@ -397,7 +420,7 @@ def cmdparse():
     parser.add_argument('-d', '--dir', type=str, default='.',
                         help='download directory')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 0.2',
+                        version='%(prog)s 0.3',
                         help='show program version and exit')
     args = parser.parse_args()
 
