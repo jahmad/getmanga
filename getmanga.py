@@ -128,14 +128,14 @@ class Manga:
             try:
                 cbz = zipfile.ZipFile(tmp_name, mode='w',
                                       compression=zipfile.ZIP_DEFLATED)
-                progress(0, pages[-1])
+                progress(0, len(pages))
                 for page in pages:
                     page_html = urlopen(self._pageurl(chapter_dir, page))
                     image_url = self.image_regex.findall(page_html)[0]
                     image_name = re.search(r'([\w\.]+)$', image_url).group()
                     image_file = urlopen(image_url)
                     cbz.writestr(image_name, image_file)
-                    progress(page, pages[-1])
+                    progress(position(page, pages) + 1, len(pages))
                 cbz.close()
                 os.rename(tmp_name, cbz_name)
             except MangaException, msg:
@@ -354,25 +354,25 @@ def urlopen(url):
         raise MangaException('Failed to retrieve %s' % url)
 
 
-def progress(num, total):
+def progress(page, total):
     """Display progress bar"""
-    num, total = int(num), int(total)
-    marks = int(round(50 * (num / total)))
+    page, total = int(page), int(total)
+    marks = int(round(50 * (page / total)))
     spaces = int(round(50 - marks))
 
-    loader = '[' + ('=' * int(marks)) + (' ' * int(spaces)) + ']'
+    loader = '[' + ('#' * int(marks)) + ('-' * int(spaces)) + ']'
 
-    sys.stdout.write('%s page %d of %d\r' % (loader, num, total))
-    if num == total:
+    sys.stdout.write('%s page %d of %d\r' % (loader, page, total))
+    if page == total:
         sys.stdout.write('\n')
     sys.stdout.flush()
 
 
-def position(key, listobj):
-    """Returns position of a key inside a list object"""
-    for i in xrange(len(listobj)):
-        if listobj[i] == key:
-            return i
+def position(item, listobj):
+    """Returns position of an item inside a list object"""
+    for index in xrange(len(listobj)):
+        if listobj[index] == item:
+            return index
 
 
 def cmdparse():
