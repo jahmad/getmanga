@@ -156,7 +156,7 @@ class Manga:
                 raise MangaException(msg)
 
     def _pagedownload(self, semaphore, queue, chapter_dir, page):
-        """docstring"""
+        """Downloads page images inside a thread"""
         semaphore.acquire()
         page_html = urlopen(self._pageurl(chapter_dir, page))
         image_url = self.image_regex.findall(page_html)[0]
