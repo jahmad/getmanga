@@ -359,7 +359,7 @@ def urlopen(url):
             #                    httplib.BadStatusLine
             retry += 1
         else:
-            if response.headers.getheader('content-length'):
+            if 'content-length' in response.headers.keys():
                 if len(data) == \
                         int(response.headers.getheader('content-length')):
                     retry = 5
@@ -367,7 +367,7 @@ def urlopen(url):
                     retry = 0
             else:
                 retry = 5
-            if response.headers.getheader('content-encoding') == 'gzip':
+            if ('content-encoding', 'gzip') in response.headers.items():
                 compressed = StringIO.StringIO(data)
                 data = gzip.GzipFile(fileobj=compressed).read()
             response.close()
