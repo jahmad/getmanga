@@ -35,6 +35,8 @@ if sys.version_info < (2, 7):
     except ImportError:
         sys.exit('You need to have "ordereddict" module installed '
                  'to run this script')
+else:
+    from collections import OrderedDict
 
 
 class MangaException(Exception):
