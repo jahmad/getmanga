@@ -433,7 +433,7 @@ def cmdparse():
                      parser.prog)
     elif not args.site:
         parser.print_usage()
-        sys.exit('%s: error: argument -s/--start is required' %
+        sys.exit('%s: error: argument -s/--site is required' %
                  parser.prog)
     elif not args.title:
         parser.print_usage()
