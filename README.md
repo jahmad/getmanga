@@ -42,8 +42,9 @@ Currently supported sites:
 
 **Optional arguments:**
 
-* -d/--dir: to save downloaded chapter to another directory
-* -f/--file: load config file instead of using command arguments
+* -d/--dir: to save downloaded chapter to another directory.
+* -l/--limit: set concurrent connection limit, default 4 connections.
+* -f/--file: load config file instead of using command arguments.
   (example file included)
 
   *Note: only support downloading all or new chapter with this mode.*
