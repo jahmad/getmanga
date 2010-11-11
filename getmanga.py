@@ -53,9 +53,10 @@ class Manga:
     pages_regex = None
     image_regex = None
 
-    def __init__(self, title=None, directory='.'):
+    def __init__(self, title=None, directory='.', concurrency=4):
         """Initiate manga title and download directory"""
         self.title = self._title(title)
+        self.concurrency = concurrency
 
         directory = os.path.abspath(os.path.expanduser(directory))
         if not os.path.isdir(directory):
@@ -136,8 +137,9 @@ class Manga:
                              (self.title, chapter_id))
             try:
                 progress(0, len(pages))
-                threads, semaphore, queue = ([], threading.Semaphore(4),
-                                             Queue.Queue())
+                threads = []
+                semaphore = threading.Semaphore(self.concurrency)
+                queue = Queue.Queue()
                 cbz = zipfile.ZipFile(tmp_name, mode='w',
                                       compression=zipfile.ZIP_DEFLATED)
                 for page in pages:
@@ -423,6 +425,8 @@ def cmdparse():
                         help='chapter number to end on a bulk download')
     parser.add_argument('-d', '--dir', type=str, default='.',
                         help='download directory')
+    parser.add_argument('-l', '--limit', type=int, default=4,
+                        help='concurrent connection limit')
     parser.add_argument('-v', '--version', action='version',
                         version='%(prog)s 0.3',
                         help='show program version and exit')
@@ -490,7 +494,7 @@ def main():
                 manga = mangaclass[site](title, directory)
                 manga.get(new=new)
         else:
-            manga = mangaclass[args.site](args.title, args.dir)
+            manga = mangaclass[args.site](args.title, args.dir, args.limit)
             manga.get(chapter=args.chapter, begin=args.begin,
                       end=args.end, new=args.new)
     except MangaException, msg:
