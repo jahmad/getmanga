@@ -367,7 +367,8 @@ def urlopen(url):
                         int(response.headers.getheader('content-length')):
                     retry = 5
                 else:
-                    retry = 0
+                    data = None
+                    retry += 1
             else:
                 retry = 5
             if ('content-encoding', 'gzip') in response.headers.items():
