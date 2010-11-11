@@ -417,12 +417,8 @@ def cmdparse():
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-n', '--new', action='store_true',
                        help='download the last chapter')
-    group.add_argument('-c', '--chapter', type=int,
-                       help='chapter number to download a single chapter')
-    group.add_argument('-b', '--begin', type=int,
-                       help='chapter number to begin on a bulk download')
-    parser.add_argument('-e', '--end', type=int,
-                        help='chapter number to end on a bulk download')
+    group.add_argument('-c', '--chapter', type=str,
+                       help='chapter number to download')
     parser.add_argument('-d', '--dir', type=str, default='.',
                         help='download directory')
     parser.add_argument('-l', '--limit', type=int, default=4,
@@ -445,15 +441,21 @@ def cmdparse():
         parser.print_usage()
         sys.exit('%s: error: argument -t/--title is required' %
                  parser.prog)
-    elif args.end:
-        if not args.begin:
-            parser.print_usage()
-            sys.exit('%s: error: argument -e/--end: need -s/--start' %
-                     parser.prog)
-        elif args.end < args.begin:
-            parser.print_usage()
-            sys.exit('%s: error: argument -e/--end: should be bigger'
-                     'than -s/--start' % parser.prog)
+    elif args.chapter:
+        chapter = args.chapter.split('-')
+        if len(chapter) == 1:
+            args.chapter = int(chapter[0])
+        elif len(chapter) == 2:
+            args.chapter = None
+            args.begin = int(chapter[0])
+            if chapter[1] == '':
+                args.end = None
+            else:
+                args.end = int(chapter[1])
+                if cmp(args.begin, args.end) == 1:
+                    parser.print_usage()
+                    sys.exit('%s: error: interval chapters invalid, the end'
+                             'should be bigger than start' % parser.prog)
     return args
 
 

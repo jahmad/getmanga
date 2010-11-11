@@ -26,19 +26,19 @@ Currently supported sites:
 
   example: `getmanga.py -s mangastream -t one_piece -n`
 
-* Download a specific chapter of a title:
+* Download specific chapter(s) of a title:
 
   `getmanga.py -s {site} -t {title} -c {chapter}`
 
-   example: `getmanga.py -s mangareader -t bleach -c 425`
+   example:
 
-* Download multiple chapters of a title:
+   * `getmanga.py -s mangareader -t bleach -c 300`: download only chapter 300
 
-  `getmanga.py -s {site} -t {title} -b {chapter} -e {chapter}`
+   * `getmanga.py -s mangareader -t bleach -c 300-310`: download chapters
+     from 300 until 310
 
-  example: `getmanga.py -s toshokan -t "20th century boys" -b 230`
-
-  *Note: if -e omitted, it will download trough the last chapter.*
+   * `getmanga.py -s mangareader -t bleach -c 300-`: download chapters from
+     300 until the end
 
 **Optional arguments:**
 
