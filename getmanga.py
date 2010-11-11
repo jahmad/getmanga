@@ -144,6 +144,7 @@ class Manga:
                     thread = threading.Thread(target=self._pagedownload,
                                               args=(semaphore, queue,
                                                     chapter_dir, page))
+                    thread.daemon = True
                     thread.start()
                     threads.append(thread)
                 for thread in threads:
