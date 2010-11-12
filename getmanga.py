@@ -297,7 +297,7 @@ class MangaAnimea(Manga):
     site = 'http://manga.animea.net'
 
     chapters_regex = re.compile(r'href="(\S+)">["\s\w]+\s(\d+)</a>\s')
-    pages_regex = re.compile(r'<option value="\d+">(\d+)</option>')
+    pages_regex = re.compile(r'<option value="\d+".*?>(\d+)</option>')
     image_regex = re.compile(r'<img src="(\S+)" .* class="chapter_img"')
 
     def _title(self, title):
