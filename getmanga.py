@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+# -*- coding: utf8 -*-
 """Yet another (multi-site) manga downloader"""
 
 # Copyright (c) 2010, Jamaludin Ahmad
@@ -427,6 +428,8 @@ def cmdparse():
                         version='%(prog)s 0.3',
                         help='show program version and exit')
     args = parser.parse_args()
+    args.begin = None
+    args.end = None
 
     if args.file:
         if not os.path.isfile(args.file):
@@ -448,9 +451,7 @@ def cmdparse():
         elif len(chapter) == 2:
             args.chapter = None
             args.begin = int(chapter[0])
-            if chapter[1] == '':
-                args.end = None
-            else:
+            if chapter[1] != '':
                 args.end = int(chapter[1])
                 if cmp(args.begin, args.end) == 1:
                     parser.print_usage()
