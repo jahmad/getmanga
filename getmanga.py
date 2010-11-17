@@ -40,6 +40,9 @@ else:
     from collections import OrderedDict
 
 
+__version__ = '0.3'
+
+
 class MangaException(Exception):
     """Exception class for manga"""
     pass
@@ -344,6 +347,14 @@ class MangaReader(Manga):
         return '%s/%s' % (self.site, page)
 
 
+MANGACLASS = {'animea': MangaAnimea,
+              'mangable': MangaBle,
+              'mangafox': MangaFox,
+              'mangareader': MangaReader,
+              'mangastream': MangaStream,
+              'toshokan': MangaToshokan}
+
+
 def urlopen(url):
     """Returns data available (html or image file) from a url"""
     request = urllib2.Request(url)
@@ -410,9 +421,8 @@ def cmdparse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=str,
                         help='%(prog)s config file')
-    parser.add_argument('-s', '--site', choices=('animea', 'mangable',
-                        'mangafox', 'mangareader', 'mangastream',
-                        'toshokan'), help='manga site to download from')
+    parser.add_argument('-s', '--site', choices=(MANGACLASS.keys()),
+                        help='manga site to download from')
     parser.add_argument('-t', '--title', type=str,
                         help='manga title to download')
     group = parser.add_mutually_exclusive_group()
@@ -425,7 +435,7 @@ def cmdparse():
     parser.add_argument('-l', '--limit', type=int, default=4,
                         help='concurrent connection limit')
     parser.add_argument('-v', '--version', action='version',
-                        version='%(prog)s 0.3',
+                        version='%s %s' % (parser.prog, __version__),
                         help='show program version and exit')
     args = parser.parse_args()
     args.begin = None
@@ -480,24 +490,16 @@ def configparse(filepath):
 
 def main():
     """Decide the right action from the command line"""
-    mangaclass = {'animea': MangaAnimea,
-                  'mangable': MangaBle,
-                  'mangafox': MangaFox,
-                  'mangareader': MangaReader,
-                  'mangastream': MangaStream,
-                  'toshokan': MangaToshokan}
-
     args = cmdparse()
-
     try:
         if args.file:
             config = configparse(args.file)
             for option in config:
                 site, title, directory, new = option
-                manga = mangaclass[site](title, directory)
+                manga = MANGACLASS[site](title, directory)
                 manga.get(new=new)
         else:
-            manga = mangaclass[args.site](args.title, args.dir, args.limit)
+            manga = MANGACLASS[args.site](args.title, args.dir, args.limit)
             manga.get(chapter=args.chapter, begin=args.begin,
                       end=args.end, new=args.new)
     except MangaException, msg:
