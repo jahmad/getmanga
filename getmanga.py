@@ -347,12 +347,12 @@ class MangaReader(Manga):
         return '%s/%s' % (self.site, page)
 
 
-MANGACLASS = {'animea': MangaAnimea,
-              'mangable': MangaBle,
-              'mangafox': MangaFox,
-              'mangareader': MangaReader,
-              'mangastream': MangaStream,
-              'toshokan': MangaToshokan}
+MANGACLASS = OrderedDict([('animea', MangaAnimea),
+                          ('mangable', MangaBle),
+                          ('mangafox', MangaFox),
+                          ('mangareader', MangaReader),
+                          ('mangastream', MangaStream),
+                          ('toshokan', MangaToshokan)])
 
 
 def urlopen(url):
