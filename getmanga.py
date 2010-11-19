@@ -81,7 +81,7 @@ class Manga:
 
         elif chapter:
             chapter_id = self._id(chapter)
-            if chapter_id in chapter_ids:
+            if chapter_id in chapter_dict:
                 self.download(chapter_id, chapter_dict[chapter_id])
             else:
                 raise MangaException('Chapter does not exist')
@@ -93,15 +93,15 @@ class Manga:
             else:
                 stop = None
 
-            if cmp(chapter_ids[-1], start) == 1:
+            try:
                 for chapter_id in chapter_ids[start:stop]:
                     self.download(chapter_id, chapter_dict[chapter_id])
-            else:
+            except IndexError:
                 raise MangaException('Can\'t begin from non-existent '
                                      'chapter')
 
         else:
-            for chapter_id, chapter_dir in chapter_dict.iteritems():
+            for (chapter_id, chapter_dir) in chapter_dict.iteritems():
                 self.download(chapter_id, chapter_dir)
 
     def chapterdict(self):
@@ -114,10 +114,10 @@ class Manga:
             chapters.reverse()
 
         chapter_dict = OrderedDict()
-        for chapter in chapters:
-            if self._verify(chapter[0]):
-                chapter_dir = self._cleanup(chapter[0])
-                chapter_dict.update({chapter[1]: chapter_dir})
+        for (chapter_dir, chapter_id) in chapters:
+            if self._verify(chapter_dir):
+                chapter_dir = self._cleanup(chapter_dir)
+                chapter_dict.update({chapter_id: chapter_dir})
 
         if chapter_dict:
             return chapter_dict
@@ -174,12 +174,14 @@ class Manga:
         queue.put((image_name, image_file))
         semaphore.release()
 
-    def _title(self, title):
+    @staticmethod
+    def _title(title):
         """Return the right manga title from user input"""
         return re.sub(r'\W+', '_',
                       re.sub(r'^\W+|W+$', '', title.lower()))
 
-    def _id(self, chapter):
+    @staticmethod
+    def _id(chapter):
         """Returns the right chapter number formatting from user input"""
         return str(chapter)
 
@@ -205,7 +207,8 @@ class Manga:
         """Returns boolean status of a chapter validity"""
         return True
 
-    def _cleanup(self, chapter_dir):
+    @staticmethod
+    def _cleanup(chapter_dir):
         """Returns a cleanup chapter directory"""
         return chapter_dir
 
@@ -219,7 +222,8 @@ class MangaFox(Manga):
     pages_regex = re.compile(r'<option value="\d+" .*?>(\d+)</option>')
     image_regex = re.compile(r'<img src="(\S+)" width="\d+" id="image"')
 
-    def _id(self, chapter):
+    @staticmethod
+    def _id(chapter):
         """Returns the right chapter number formatting from user input"""
         return '%03d' % chapter
 
@@ -248,7 +252,8 @@ class MangaStream(Manga):
         """Returns boolean status of a chapter validity"""
         return re.search(self.title, chapter_dir)
 
-    def _cleanup(self, chapter_dir):
+    @staticmethod
+    def _cleanup(chapter_dir):
         """Returns a cleanup chapter directory"""
         return re.sub(r'/\d+$', '', chapter_dir)
 
@@ -261,7 +266,8 @@ class MangaToshokan(Manga):
     pages_regex = re.compile(r'<option value="\S+".*?>(\d+)</option>')
     image_regex = re.compile(r'dir=\'rtl\'><img src="(\S+)"')
 
-    def _title(self, title):
+    @staticmethod
+    def _title(title):
         """Returns the right manga title from user input"""
         return re.sub(r'[^\-0-9a-zA-Z]+', '', re.sub(r'[\s_]', '-', title))
 
@@ -278,7 +284,8 @@ class MangaBle(Manga):
     pages_regex = re.compile(r'<option value="\d+">Page (\d+)</option>')
     image_regex = re.compile(r'<img src="(\S+)" class="image"')
 
-    def _title(self, title):
+    @staticmethod
+    def _title(title):
         """Returns the right manga title from user input"""
         return re.sub(r'[^\-_0-9a-zA-Z]+', '',
                       re.sub(r'\s', '_', title.lower()))
@@ -303,7 +310,8 @@ class MangaAnimea(Manga):
     pages_regex = re.compile(r'<option value="\d+".*?>(\d+)</option>')
     image_regex = re.compile(r'<img src="(\S+)" .* class="chapter_img"')
 
-    def _title(self, title):
+    @staticmethod
+    def _title(title):
         """Returns the right manga title from user input"""
         return re.sub(r'\W+', '-', title.lower())
 
@@ -330,7 +338,8 @@ class MangaReader(Manga):
     pages_regex = re.compile(r'<option value="\S+">(\d+)</option>')
     image_regex = re.compile(r'<img\s+src="(\S+)" .* width="800"')
 
-    def _title(self, title):
+    @staticmethod
+    def _title(title):
         """Returns the right manga title from user input"""
         return re.sub(r'[^\-0-9a-zA-Z]', '',
                       re.sub(r'[\s_]', '-', title.lower()))
@@ -461,7 +470,7 @@ def cmdparse():
         elif len(chapter) == 2:
             args.chapter = None
             args.begin = int(chapter[0])
-            if chapter[1] != '':
+            if chapter[1]:
                 args.end = int(chapter[1])
                 if cmp(args.begin, args.end) == 1:
                     parser.print_usage()
@@ -494,8 +503,7 @@ def main():
     try:
         if args.file:
             config = configparse(args.file)
-            for option in config:
-                site, title, directory, new = option
+            for (site, title, directory, new) in config:
                 manga = MANGACLASS[site](title, directory)
                 manga.get(new=new)
         else:
