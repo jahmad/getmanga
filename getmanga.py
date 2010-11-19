@@ -88,10 +88,7 @@ class Manga:
 
         elif begin:
             start = position(self._id(begin), chapter_ids)
-            if end:
-                stop = position(self._id(end), chapter_ids)
-            else:
-                stop = None
+            stop = position(self._id(end), chapter_ids) + 1 if end else None
 
             try:
                 for chapter_id in chapter_ids[start:stop]:
@@ -472,9 +469,9 @@ def cmdparse():
             args.begin = int(chapter[0])
             if chapter[1]:
                 args.end = int(chapter[1])
-                if cmp(args.begin, args.end) == 1:
+                if args.begin > args.end:
                     parser.print_usage()
-                    sys.exit('%s: error: interval chapters invalid, the end'
+                    sys.exit('%s: error: invalid chapter interval, the end '
                              'should be bigger than start' % parser.prog)
     return args
 
