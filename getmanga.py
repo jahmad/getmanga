@@ -48,7 +48,7 @@ class MangaException(Exception):
     pass
 
 
-class Manga:
+class Manga(object):
     """Base class for manga downloading"""
     site = None
     descending_chapters = True
