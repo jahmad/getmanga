@@ -467,12 +467,11 @@ def cmdparse():
         elif len(chapter) == 2:
             args.chapter = None
             args.begin = int(chapter[0])
-            if chapter[1]:
-                args.end = int(chapter[1])
-                if args.begin > args.end:
-                    parser.print_usage()
-                    sys.exit('%s: error: invalid chapter interval, the end '
-                             'should be bigger than start' % parser.prog)
+            args.end = int(chapter[1]) if chapter[1] else None
+        if args.end and (args.begin > args.end):
+            parser.print_usage()
+            sys.exit('%s: error: invalid chapter interval, the end '
+                     'should be bigger than start' % parser.prog)
     return args
 
 
