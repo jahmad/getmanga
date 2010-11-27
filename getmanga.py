@@ -163,13 +163,19 @@ class Manga(object):
 
     def _pagedownload(self, semaphore, queue, chapter_dir, page):
         """Downloads page images inside a thread"""
-        semaphore.acquire()
-        page_html = urlopen(self._pageurl(chapter_dir, page))
-        image_url = self.image_regex.findall(page_html)[0]
-        image_name = re.search(r'([\w\.]+)$', image_url).group()
-        image_file = urlopen(image_url)
-        queue.put((image_name, image_file))
-        semaphore.release()
+        try:
+            semaphore.acquire()
+            page_html = urlopen(self._pageurl(chapter_dir, page))
+            image_url = self.image_regex.findall(page_html)[0]
+            image_name = re.search(r'([\w\.]+)$', image_url).group()
+            image_file = urlopen(image_url)
+        except MangaException:
+            #TODO: something needed here to stop all download
+            pass
+        else:
+            queue.put((image_name, image_file))
+        finally:
+            semaphore.release()
 
     @staticmethod
     def _title(title):
