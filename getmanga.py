@@ -13,16 +13,16 @@
 
 from __future__ import division
 
+import ConfigParser
+import Queue
+import StringIO
+import gzip
 import os
-import sys
 import re
+import sys
+import threading
 import urllib2
 import zipfile
-import gzip
-import StringIO
-import ConfigParser
-import threading
-import Queue
 
 try:
     import argparse
