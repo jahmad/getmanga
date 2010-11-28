@@ -136,20 +136,22 @@ class Manga(object):
 
             sys.stdout.write('downloading %s %s:\n' %
                              (self.title, chapter_id))
+            progress(0, len(pages))
+
+            threads = []
+            semaphore = threading.Semaphore(self.concurrency)
+            queue = Queue.Queue()
+            for page in pages:
+                thread = threading.Thread(target=self._pagedownload,
+                                          args=(semaphore, queue,
+                                                chapter_dir, page))
+                thread.daemon = True
+                thread.start()
+                threads.append(thread)
+
             try:
-                progress(0, len(pages))
-                threads = []
-                semaphore = threading.Semaphore(self.concurrency)
-                queue = Queue.Queue()
                 cbz = zipfile.ZipFile(tmp_name, mode='w',
                                       compression=zipfile.ZIP_DEFLATED)
-                for page in pages:
-                    thread = threading.Thread(target=self._pagedownload,
-                                              args=(semaphore, queue,
-                                                    chapter_dir, page))
-                    thread.daemon = True
-                    thread.start()
-                    threads.append(thread)
                 for thread in threads:
                     thread.join()
                     image = queue.get()
@@ -158,11 +160,13 @@ class Manga(object):
                         progress(len(cbz.filelist), len(pages))
                     else:
                         raise MangaException(image[1])
-                cbz.close()
-                os.rename(tmp_name, cbz_name)
             except Exception, msg:
+                cbz.close()
                 os.remove(tmp_name)
                 raise MangaException(msg)
+            else:
+                cbz.close()
+                os.rename(tmp_name, cbz_name)
 
     def _pagedownload(self, semaphore, queue, chapter_dir, page):
         """Downloads page images inside a thread"""
