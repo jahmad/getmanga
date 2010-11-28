@@ -153,8 +153,11 @@ class Manga(object):
                 for thread in threads:
                     thread.join()
                     image = queue.get()
-                    cbz.writestr(image[0], image[1])
-                    progress(len(cbz.filelist), len(pages))
+                    if image[0]:
+                        cbz.writestr(image[0], image[1])
+                        progress(len(cbz.filelist), len(pages))
+                    else:
+                        raise MangaException(image[1])
                 cbz.close()
                 os.rename(tmp_name, cbz_name)
             except Exception, msg:
@@ -169,9 +172,8 @@ class Manga(object):
             image_url = self.image_regex.findall(page_html)[0]
             image_name = re.search(r'([\w\.]+)$', image_url).group()
             image_file = urlopen(image_url)
-        except MangaException:
-            #TODO: something needed here to stop all download
-            pass
+        except MangaException, msg:
+            queue.put((None, msg))
         else:
             queue.put((image_name, image_file))
         finally:
