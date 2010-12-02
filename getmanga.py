@@ -226,10 +226,10 @@ class MangaFox(Manga):
     """class for mangafox site"""
     site = 'http://www.mangafox.com'
 
-    chapters_regex = re.compile(r'</a>\s*<a href="(\S+)" class="chico">'
-                                 '\s*.* Ch\.([\d\.]+):')
-    pages_regex = re.compile(r'<option value="\d+" .*?>(\d+)</option>')
-    image_regex = re.compile(r'<img src="(\S+)" width="\d+" id="image"')
+    chapters_regex = re.compile(r'</a>[ \r\n]*<a href="([^ ]+)" class='
+                                r'"chico">[ \r\n]*.*[ ]+Ch\.([\.0-9]+)')
+    pages_regex = re.compile(r'option value="[0-9]+" .*?>([0-9]+)</option')
+    image_regex = re.compile(r'img src="([^ ]+)" width="[0-9]+" id="image"')
 
     @staticmethod
     def _id(chapter):
@@ -249,9 +249,9 @@ class MangaStream(Manga):
     """class for mangastream site"""
     site = 'http://mangastream.com'
 
-    chapters_regex = re.compile(r'<a href="(\S+)">(\d+)')
-    pages_regex = re.compile(r'<option value="\S+".*?>(\d{1,2})</option>')
-    image_regex = re.compile(r'this.src=\'(\S+)\'" border="0"')
+    chapters_regex = re.compile(r'<a href="([^ ]+)">([0-9]+)')
+    pages_regex = re.compile(r'option value="[^ ]+".*?>([0-9]{1,2})</opt')
+    image_regex = re.compile(r'this.src=\'([^ ]+)\'" border="0"')
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
@@ -271,9 +271,9 @@ class MangaToshokan(Manga):
     """class for mangatoshokan site"""
     site = 'http://www.mangatoshokan.com'
 
-    chapters_regex = re.compile(r'href=\'(\S+)\' .* (\d+)</a>')
-    pages_regex = re.compile(r'<option value="\S+".*?>(\d+)</option>')
-    image_regex = re.compile(r'dir=\'rtl\'><img src="(\S+)"')
+    chapters_regex = re.compile(r'href=\'([^ ]+)\' .* ([0-9]+)</a>')
+    pages_regex = re.compile(r'<option value="[^ ]+".*?>([0-9]+)</option>')
+    image_regex = re.compile(r'dir=\'rtl\'><img src="([^ ]+)"')
 
     @staticmethod
     def _title(title):
@@ -289,9 +289,9 @@ class MangaBle(Manga):
     """class for mangable site"""
     site = 'http://mangable.com'
 
-    chapters_regex = re.compile(r'href="(\S+)" title="[\D\s]*(\d+)">')
-    pages_regex = re.compile(r'<option value="\d+">Page (\d+)</option>')
-    image_regex = re.compile(r'<img src="(\S+)" class="image"')
+    chapters_regex = re.compile(r'href="([^ ]+)" .* Chapter ([\.0-9]+)">')
+    pages_regex = re.compile(r'option value="[0-9]+">Page ([0-9]+)</opt')
+    image_regex = re.compile(r'<img src="([^ ]+)" class="image"')
 
     @staticmethod
     def _title(title):
@@ -315,9 +315,9 @@ class MangaAnimea(Manga):
     """class for manga animea site"""
     site = 'http://manga.animea.net'
 
-    chapters_regex = re.compile(r'href="(\S+)">["\s\w]+\s(\d+)</a>\s')
-    pages_regex = re.compile(r'<option value="\d+".*?>(\d+)</option>')
-    image_regex = re.compile(r'<img src="(\S+)" .* class="chapter_img"')
+    chapters_regex = re.compile(r'href="([^ ]+)">.* ([\.0-9]+)</a>\s')
+    pages_regex = re.compile(r'<option value="[0-9]+".*?>([0-9]+)</option>')
+    image_regex = re.compile(r'<img src="([^ ]+)" .* class="chapter_img"')
 
     @staticmethod
     def _title(title):
@@ -342,10 +342,10 @@ class MangaReader(Manga):
     site = 'http://www.mangareader.net'
     descending_chapters = False
 
-    chapters_regex = re.compile(r'<td><a href="(\S+)" class="chico">'
-                                 '.+(\d+)</a>')
-    pages_regex = re.compile(r'<option value=.+>\s*(\d+)</option>')
-    image_regex = re.compile(r'<img id="img" src="(\S+)" width="800"')
+    chapters_regex = re.compile(r'<td><a href="([^ ]+)" class="chico">'
+                                r'.+ ([\.0-9]+)</a>')
+    pages_regex = re.compile(r'<option value=.+>\s*([0-9]+)</option>')
+    image_regex = re.compile(r'<img id="img" src="([^ ]+)" width="800"')
 
     @staticmethod
     def _title(title):
@@ -366,8 +366,11 @@ class MangaReader(Manga):
 
     def _pageurl(self, chapter_dir, page='1'):
         """Returns manga image page url"""
-        page = re.sub(r'\-[0-9]+/', '-%s/' % page, chapter_dir)
-        return '%s%s' % (self.site, page)
+        if re.search(r'.html$', chapter_dir):
+            page = re.sub(r'\-[0-9]+/', '-%s/' % page, chapter_dir)
+            return '%s%s' % (self.site, page)
+        else:
+            return '%s%s/%s' % (self.site, chapter_dir, page)
 
 
 MANGACLASS = OrderedDict([('animea', MangaAnimea),
