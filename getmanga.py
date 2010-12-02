@@ -174,7 +174,7 @@ class Manga(object):
             semaphore.acquire()
             page_html = urlopen(self._pageurl(chapter_dir, page))
             image_url = self.image_regex.findall(page_html)[0]
-            image_name = re.search(r'([\w\.]+)$', image_url).group()
+            image_name = re.search(r'([a-zA-Z0-9_\.]+)$', image_url).group()
             image_file = urlopen(image_url)
         except MangaException, msg:
             queue.put((None, msg))
@@ -186,8 +186,8 @@ class Manga(object):
     @staticmethod
     def _title(title):
         """Return the right manga title from user input"""
-        return re.sub(r'\W+', '_',
-                      re.sub(r'^\W+|W+$', '', title.lower()))
+        return re.sub(r'[^a-z0-9]+', '_',
+                      re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', title.lower()))
 
     @staticmethod
     def _id(chapter):
@@ -204,7 +204,7 @@ class Manga(object):
 
     def _name(self, chapter_id, chapter_dir):
         """Returns the appropriate name for the zipped chapter"""
-        match = re.search(r'v\d+', chapter_dir)
+        match = re.search(r'v[0-9]+', chapter_dir)
         if match:
             filename = '%s_%sc%s.cbz' % \
                         (self.title, match.group(), chapter_id)
@@ -264,7 +264,7 @@ class MangaStream(Manga):
     @staticmethod
     def _cleanup(chapter_dir):
         """Returns a cleanup chapter directory"""
-        return re.sub(r'/\d+$', '', chapter_dir)
+        return re.sub(r'/[0-9]+$', '', chapter_dir)
 
 
 class MangaToshokan(Manga):
@@ -278,7 +278,7 @@ class MangaToshokan(Manga):
     @staticmethod
     def _title(title):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^\-0-9a-zA-Z]+', '', re.sub(r'[\s_]', '-', title))
+        return re.sub(r'[^\-a-zA-Z0-9]+', '', re.sub(r'[ _]', '-', title))
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
@@ -296,7 +296,7 @@ class MangaBle(Manga):
     @staticmethod
     def _title(title):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^\-_0-9a-zA-Z]+', '',
+        return re.sub(r'[^\-_a-z0-9]+', '',
                       re.sub(r'\s', '_', title.lower()))
 
     def _infourl(self):
@@ -322,7 +322,7 @@ class MangaAnimea(Manga):
     @staticmethod
     def _title(title):
         """Returns the right manga title from user input"""
-        return re.sub(r'\W+', '-', title.lower())
+        return re.sub(r'[^a-z0-9_]+', '-', title.lower())
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
@@ -350,13 +350,13 @@ class MangaReader(Manga):
     @staticmethod
     def _title(title):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^\-0-9a-zA-Z]', '',
-                      re.sub(r'[\s_]', '-', title.lower()))
+        return re.sub(r'[^\-a-z0-9]', '',
+                      re.sub(r'[ _]', '-', title.lower()))
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
         list_html = urlopen('%s/alphabetical' % self.site)
-        match = re.findall(r'\d+/' + self.title + '.html', list_html)
+        match = re.findall(r'[0-9]+/' + self.title + '.html', list_html)
         if match:
             return '%s/%s' % (self.site, match[0])
         else:
@@ -364,7 +364,7 @@ class MangaReader(Manga):
 
     def _pageurl(self, chapter_dir, page='1'):
         """Returns manga image page url"""
-        page = re.sub(r'\-\d+/', '-%s/' % page, chapter_dir)
+        page = re.sub(r'\-[0-9]+/', '-%s/' % page, chapter_dir)
         return '%s%s' % (self.site, page)
 
 
