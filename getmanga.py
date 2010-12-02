@@ -342,10 +342,10 @@ class MangaReader(Manga):
     site = 'http://www.mangareader.net'
     descending_chapters = False
 
-    chapters_regex = re.compile(r'<td> <a class="chico" href="(\S+)">'
-                                 '\s+.+\s+(\d+)</a>')
-    pages_regex = re.compile(r'<option value="\S+">(\d+)</option>')
-    image_regex = re.compile(r'<img\s+src="(\S+)" .* width="800"')
+    chapters_regex = re.compile(r'<td><a href="(\S+)" class="chico">'
+                                 '.+(\d+)</a>')
+    pages_regex = re.compile(r'<option value=.+>\s*(\d+)</option>')
+    image_regex = re.compile(r'<img id="img" src="(\S+)" width="800"')
 
     @staticmethod
     def _title(title):
@@ -355,14 +355,17 @@ class MangaReader(Manga):
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
-        listhtml = urlopen('%s/alphabetical' % self.site)
-        info = re.findall(r'\d+/' + self.title + '.html', listhtml)[0]
-        return '%s/%s' % (self.site, info)
+        list_html = urlopen('%s/alphabetical' % self.site)
+        match = re.findall(r'\d+/' + self.title + '.html', list_html)
+        if match:
+            return '%s/%s' % (self.site, match[0])
+        else:
+            return self.site
 
     def _pageurl(self, chapter_dir, page='1'):
         """Returns manga image page url"""
         page = re.sub(r'\-\d+/', '-%s/' % page, chapter_dir)
-        return '%s/%s' % (self.site, page)
+        return '%s%s' % (self.site, page)
 
 
 MANGACLASS = OrderedDict([('animea', MangaAnimea),
