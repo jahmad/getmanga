@@ -204,11 +204,11 @@ class Manga(object):
 
     def _name(self, chapter_id, chapter_dir):
         """Returns the appropriate name for the zipped chapter"""
-        match = re.search(r'v[0-9]+', chapter_dir)
-        if match:
+        try:
+            volume_id = re.search(r'v[0-9]+', chapter_dir).group()
             filename = '%s_%sc%s.cbz' % \
-                        (self.title, match.group(), chapter_id)
-        else:
+                        (self.title, volume_id, chapter_id)
+        except AttributeError:
             filename = '%s_c%s.cbz' % (self.title, chapter_id)
         return filename
 
@@ -355,12 +355,14 @@ class MangaReader(Manga):
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
-        list_html = urlopen('%s/alphabetical' % self.site)
-        match = re.findall(r'[0-9]+/' + self.title + '.html', list_html)
-        if match:
-            return '%s/%s' % (self.site, match[0])
-        else:
-            return self.site
+        try:
+            list_html = urlopen('%s/alphabetical' % self.site)
+            info_page = re.findall(r'[0-9]+/' + self.title + '.html',
+                        list_html)[0]
+            info_url = '%s/%s' % (self.site, info_page)
+        except IndexError:
+            info_url = self.site
+        return info_url
 
     def _pageurl(self, chapter_dir, page='1'):
         """Returns manga image page url"""
