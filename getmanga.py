@@ -373,7 +373,7 @@ class MangaReader(Manga):
             return '%s%s/%s' % (self.site, chapter_dir, page)
 
 
-MANGACLASS = OrderedDict([('animea', MangaAnimea),
+SITE_NAMES = OrderedDict([('animea', MangaAnimea),
                           ('mangable', MangaBle),
                           ('mangafox', MangaFox),
                           ('mangareader', MangaReader),
@@ -447,7 +447,7 @@ def cmdparse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=str,
                         help='%(prog)s config file')
-    parser.add_argument('-s', '--site', choices=(MANGACLASS.keys()),
+    parser.add_argument('-s', '--site', choices=(SITE_NAMES.keys()),
                         help='manga site to download from')
     parser.add_argument('-t', '--title', type=str,
                         help='manga title to download')
@@ -520,10 +520,10 @@ def main():
         if args.file:
             config = configparse(args.file)
             for (site, title, directory, new) in config:
-                manga = MANGACLASS[site](title, directory)
+                manga = SITE_NAMES[site](title, directory)
                 manga.get(new=new)
         else:
-            manga = MANGACLASS[args.site](args.title, args.dir, args.limit)
+            manga = SITE_NAMES[args.site](args.title, args.dir, args.limit)
             manga.get(chapter=args.chapter, begin=args.begin,
                       end=args.end, new=args.new)
     except MangaException, msg:
