@@ -385,8 +385,8 @@ def urlopen(url):
     """Returns data available (html or image file) from a url"""
     request = urllib2.Request(url)
     request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; U; ' \
-                       'Intel Mac OS X 10_6_4; id) AppleWebKit/533.18.1 ' \
-                       '(KHTML, like Gecko) Version/5.0.2 Safari/533.18.5')
+                       'Intel Mac OS X 10_6_5; id) AppleWebKit/533.19.4 ' \
+                       '(KHTML, like Gecko) Version/5.0.3 Safari/533.19.4')
     request.add_header('Accept-encoding', 'gzip')
 
     data = None
