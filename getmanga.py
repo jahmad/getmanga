@@ -339,10 +339,9 @@ class MangaReader(Manga):
     """class for mangareader site"""
     site = 'http://www.mangareader.net'
 
-    chapters_regex = re.compile(r'<td><a href="([^ ]+)" class="chico">'
-                                r'.+ ([\.0-9]+)</a>')
+    chapters_regex = re.compile(r'<a href="([^ ]+)">.+ ([0-9]+)</a>')
     pages_regex = re.compile(r'<option value=.+>\s*([0-9]+)</option>')
-    image_regex = re.compile(r'<img id="img" src="([^ ]+)" width="800"')
+    image_regex = re.compile(r'<img id="img" .+ src="([^ ]+)"')
 
     @staticmethod
     def _title(title):
