@@ -51,7 +51,6 @@ class MangaException(Exception):
 class Manga(object):
     """Base class for manga downloading"""
     site = None
-    descending_chapters = True
 
     chapters_regex = None
     pages_regex = None
@@ -107,8 +106,7 @@ class Manga(object):
 
         info_html = urlopen(self._infourl())
         chapters = self.chapters_regex.findall(info_html)
-        if self.descending_chapters:
-            chapters.reverse()
+        chapters = sorted(set(chapters), key=lambda x: int(x[1]))
 
         chapter_dict = OrderedDict()
         for (chapter_dir, chapter_id) in chapters:
@@ -340,7 +338,6 @@ class MangaAnimea(Manga):
 class MangaReader(Manga):
     """class for mangareader site"""
     site = 'http://www.mangareader.net'
-    descending_chapters = False
 
     chapters_regex = re.compile(r'<td><a href="([^ ]+)" class="chico">'
                                 r'.+ ([\.0-9]+)</a>')
