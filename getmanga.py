@@ -373,7 +373,6 @@ SITE_NAMES = OrderedDict(animea=MangaAnimea,
                          mangable=MangaBle,
                          mangafox=MangaFox,
                          mangareader=MangaReader,
-                         mangastream=MangaStream,
                          toshokan=MangaToshokan)
 
 
