@@ -106,7 +106,7 @@ class Manga(object):
 
         info_html = urlopen(self._infourl())
         chapters = self.chapters_regex.findall(info_html)
-        chapters = sorted(set(chapters), key=lambda x: int(x[1]))
+        chapters = sorted(set(chapters), key=lambda x: float(x[1]))
 
         chapter_dict = OrderedDict()
         for (chapter_dir, chapter_id) in chapters:
@@ -225,18 +225,13 @@ class MangaFox(Manga):
     site = 'http://www.mangafox.com'
 
     chapters_regex = re.compile(r'</a>[ \r\n]*<a href="([^ ]+)" class='
-                                r'"chico">[ \r\n]*.*[ ]+Ch\.([\.0-9]+)')
+                                r'"ch" title="[^"]+">.* ([\.0-9]+)</a>')
     pages_regex = re.compile(r'option value="[0-9]+" .*?>([0-9]+)</option')
-    image_regex = re.compile(r'img src="([^ ]+)" width="[0-9]+" id="image"')
-
-    @staticmethod
-    def _id(chapter):
-        """Returns the right chapter number formatting from user input"""
-        return '%03d' % chapter
+    image_regex = re.compile(r'img src="([^ ]+)" onerror="')
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
-        return '%s/manga/%s?no_warning=1' % (self.site, self.title)
+        return '%s/manga/%s/?no_warning=1' % (self.site, self.title)
 
     def _pageurl(self, chapter_dir, page='1'):
         """Returns manga image page url"""
