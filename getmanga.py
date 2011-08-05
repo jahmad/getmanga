@@ -248,8 +248,8 @@ class MangaStream(Manga):
     site = 'http://mangastream.com'
 
     chapters_regex = re.compile(r'<a href="([^ ]+)">([0-9]+)')
-    pages_regex = re.compile(r'option value="[^ ]+".*?>([0-9]{1,2})</opt')
-    image_regex = re.compile(r'this.src=\'([^ ]+)\'" border="0"')
+    pages_regex = re.compile(r'<a href="[^ ]+".*?>([0-9]{1,2})</a>')
+    image_regex = re.compile(r'src="([^ ]+)" border="0"')
 
     def _infourl(self):
         """Returns the index page's url of manga title"""
@@ -373,6 +373,7 @@ SITE_NAMES = OrderedDict(animea=MangaAnimea,
                          mangable=MangaBle,
                          mangafox=MangaFox,
                          mangareader=MangaReader,
+                         mangastream=MangaStream,
                          toshokan=MangaToshokan)
 
 
