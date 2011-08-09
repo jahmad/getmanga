@@ -172,7 +172,8 @@ class Manga(object):
             semaphore.acquire()
             page_html = urlopen(self._pageurl(chapter_dir, page))
             image_url = self.image_regex.findall(page_html)[0]
-            image_name = re.search(r'([a-zA-Z0-9_\.]+)$', image_url).group()
+            image_ext = image_url.split('.')[-1]
+            image_name = 'page%03d.%s' % (int(page), image_ext)
             image_file = urlopen(image_url)
         except MangaException, msg:
             queue.put((None, msg))
