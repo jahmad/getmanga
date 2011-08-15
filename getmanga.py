@@ -415,9 +415,12 @@ def urlopen(url):
 
 def progress(page, total):
     """Display progress bar"""
-    page, total = int(page), int(total)
-    marks = int(round(50 * (page / total)))
-    spaces = int(round(50 - marks))
+    try:
+        page, total = int(page), int(total)
+        marks = int(round(50 * (page / total)))
+        spaces = int(round(50 - marks))
+    except Exception:
+        raise MangaException('Unknown error')
 
     loader = '[' + ('#' * int(marks)) + ('-' * int(spaces)) + ']'
 
