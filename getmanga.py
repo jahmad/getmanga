@@ -243,7 +243,7 @@ class MangaStream(Manga):
     """class for mangastream site"""
     site = 'http://mangastream.com'
 
-    chapters_regex = re.compile(r'<a href="([^ ]+)">([0-9]+)')
+    chapters_regex = re.compile(r'href="(/read/[^ ]+)">.*?([0-9]+)')
     pages_regex = re.compile(r'<a href="[^ ]+".*?>([0-9]{1,2})</a>')
     image_regex = re.compile(r'src="([^ ]+)" border="0"')
 
@@ -253,7 +253,7 @@ class MangaStream(Manga):
 
     def _verify(self, chapter_dir):
         """Returns boolean status of a chapter validity"""
-        return re.search(self.title, chapter_dir)
+        return '/%s/' % self.title in chapter_dir
 
     @staticmethod
     def _cleanup(chapter_dir):
