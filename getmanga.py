@@ -328,7 +328,7 @@ class MangaAnimea(Manga):
 
     def _verify(self, chapter_dir):
         """Returns boolean status of a chapter validity"""
-        return re.search(self.title, chapter_dir)
+        return self.title in chapter_dir
 
 
 class MangaReader(Manga):
@@ -358,7 +358,7 @@ class MangaReader(Manga):
 
     def _pageurl(self, chapter_dir, page='1'):
         """Returns manga image page url"""
-        if re.search(r'.html$', chapter_dir):
+        if chapter_dir.endswith('.html'):
             page = re.sub(r'\-[0-9]+/', '-%s/' % page, chapter_dir)
             return '%s%s' % (self.site, page)
         else:
