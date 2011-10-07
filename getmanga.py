@@ -65,7 +65,7 @@ class Manga(object):
         if not os.path.isdir(directory):
             try:
                 os.makedirs(directory)
-            except OSError, msg:
+            except OSError as msg:
                 raise MangaException(msg)
         self.directory = directory
 
@@ -158,7 +158,7 @@ class Manga(object):
                         progress(len(cbz.filelist), len(pages))
                     else:
                         raise MangaException(image[1])
-            except Exception, msg:
+            except Exception as msg:
                 cbz.close()
                 os.remove(tmp_name)
                 raise MangaException(msg)
@@ -175,7 +175,7 @@ class Manga(object):
             image_ext = image_url.split('.')[-1]
             image_name = 'page%03d.%s' % (int(page), image_ext)
             image_file = urlopen(image_url)
-        except MangaException, msg:
+        except MangaException as msg:
             queue.put((None, msg))
         else:
             queue.put((image_name, image_file))
@@ -387,7 +387,7 @@ def urlopen(url):
         try:
             response = urllib2.urlopen(request, timeout=15)
             data = response.read()
-        except urllib2.HTTPError, msg:
+        except urllib2.HTTPError as msg:
             raise MangaException('HTTP Error: %s - %s\n' % (msg.code, url))
         except Exception:
             #what may goes here: urllib2.URLError, socket.timeout,
@@ -432,9 +432,9 @@ def progress(page, total):
 
 def position(item, listobj):
     """Returns position of an item inside a list object"""
-    for index in xrange(len(listobj)):
-        if listobj[index] == item:
-            return index
+    for i, j in enumerate(listobj):
+        if j == item:
+            return i
 
 
 def cmdparse():
@@ -503,7 +503,7 @@ def configparse(filepath):
             config.append((parser.get(title, 'site'), title,
                            parser.get(title, 'dir'),
                            parser.getboolean(title, 'new')))
-        except Exception, msg:
+        except Exception as msg:
             raise MangaException('Config Error: %s' % msg)
     return config
 
@@ -521,7 +521,7 @@ def main():
             manga = SITE_NAMES[args.site](args.title, args.dir, args.limit)
             manga.get(chapter=args.chapter, begin=args.begin,
                       end=args.end, new=args.new)
-    except MangaException, msg:
+    except MangaException as msg:
         sys.exit(msg)
     except KeyboardInterrupt:
         sys.exit('Cancelling download... quit')

@@ -57,7 +57,6 @@ Currently supported sites:
 
 ##Credits:
 * yudha-gunslinger for [progressbar](http://gunslingerc0de.wordpress.com/2010/08/13/python-command-line-progress-bar/)
-* jakber-stackoverflow for [get position in a list](http://stackoverflow.com/questions/364621/python-get-position-in-list)
 
 ##License:
 
