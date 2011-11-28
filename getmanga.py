@@ -77,6 +77,12 @@ class GetManga(object):
             tmp_file = '{0}.tmp'.format(cbz_file)
             pages = self.manga.get_pages(chapter.uri)
 
+            try:
+                cbz = zipfile.ZipFile(tmp_file, mode='w',
+                                      compression=zipfile.ZIP_DEFLATED)
+            except IOError as msg:
+                raise MangaException(msg)
+
             sys.stdout.write("downloading {0} {1}:\n".
                                         format(self.title, chapter.number))
             progress(0, len(pages))
@@ -92,8 +98,6 @@ class GetManga(object):
                 threads.append(thread)
 
             try:
-                cbz = zipfile.ZipFile(tmp_file, mode='w',
-                                      compression=zipfile.ZIP_DEFLATED)
                 for thread in threads:
                     thread.join()
                     image = queue.get()
