@@ -527,6 +527,9 @@ if __name__ == '__main__':
                         stop = index + 1
                 for chapter in chapters[start:stop]:
                     manga.download(chapter)
+            else:
+                for chapter in chapters:
+                    manga.download(chapter)
 
         except MangaException as msg:
             sys.exit(msg)
