@@ -195,7 +195,8 @@ class MangaSite(object):
     def _get_chapter_uri(self, location):
         return "{0}{1}".format(self.site_uri, location)
 
-    def _get_page_uri(self, chapter_uri, page_number):
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_number):
         return "{0}/{1}".format(chapter_uri, page_number)
 
     @staticmethod
@@ -218,7 +219,8 @@ class MangaFox(MangaSite):
         return "{0}/manga/{1}/?no_warning=1".\
                             format(self.site_uri, self.title)
 
-    def _get_page_uri(self, chapter_uri, page_number):
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_number):
         """Returns manga image page url"""
         return re.sub(r'[0-9]+.html$', "{0}.html".format(page_number),
                       chapter_uri)
@@ -239,7 +241,8 @@ class MangaStream(MangaSite):
     def _is_valid(self, chapter_uri):
         return "/{0}/".format(self.title) in chapter_uri
 
-    def _get_page_uri(self, chapter_uri, page_number):
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_number):
         return re.sub('[0-9]+$', page_number, chapter_uri)
 
 
@@ -278,10 +281,12 @@ class MangaBle(MangaSite):
         return re.sub(r'[^\-_a-z0-9]+', '',
                       re.sub(r'\s', '_', self._title.lower()))
 
-    def _get_chapter_uri(self, location):
+    @staticmethod
+    def _get_chapter_uri(location):
         return location
 
-    def _get_page_uri(self, chapter_uri, page_number=None):
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_number=None):
         """Returns manga image page url"""
         if page_number:
             return "{0}{1}".format(chapter_uri, page_number)
@@ -308,7 +313,8 @@ class MangaAnimea(MangaSite):
         """Returns the index page's url of manga title"""
         return "{0}/{1}.html?skip=1".format(self.site_uri, self.title)
 
-    def _get_page_uri(self, chapter_uri, page_number=1):
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_number=1):
         """Returns manga image page url"""
         return re.sub(r'.html$', '-page-{0}.html'.format(page_number),
                       chapter_uri)
