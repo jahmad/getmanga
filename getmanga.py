@@ -160,7 +160,7 @@ class MangaSite(object):
 
         chapters = []
         for (location, number) in _chapters:
-            if self._is_valid(location):
+            if self._is_valid_uri(location):
                 name = self._get_chapter_name(number, location)
                 uri = self._get_chapter_uri(location)
                 chapter = Chapter(name, number, uri)
@@ -200,7 +200,7 @@ class MangaSite(object):
         return "{0}/{1}".format(chapter_uri, page_number)
 
     @staticmethod
-    def _is_valid(chapter_uri):
+    def _is_valid_uri(chapter_uri):
         return True
 
 
@@ -238,7 +238,7 @@ class MangaStream(MangaSite):
     def title_uri(self):
         return "{0}/manga/".format(self.site_uri)
 
-    def _is_valid(self, chapter_uri):
+    def _is_valid_uri(self, chapter_uri):
         return "/{0}/".format(self.title) in chapter_uri
 
     @staticmethod
@@ -319,7 +319,7 @@ class MangaAnimea(MangaSite):
         return re.sub(r'.html$', '-page-{0}.html'.format(page_number),
                       chapter_uri)
 
-    def _is_valid(self, chapter_uri):
+    def _is_valid_uri(self, chapter_uri):
         """Returns boolean status of a chapter validity"""
         return self.title in chapter_uri
 
