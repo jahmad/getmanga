@@ -170,7 +170,7 @@ class MangaSite(object):
     def get_pages(self, chapter_uri):
         content = urlopen(chapter_uri)
         _pages = self._pages_re.findall(content)
-        _pages = sorted(list(set(_pages)), key=int)
+        _pages = self._get_valid_pages(_pages)
         pages = []
         for _page in _pages:
             uri = self._get_page_uri(chapter_uri, _page)
@@ -202,6 +202,10 @@ class MangaSite(object):
     @staticmethod
     def _is_valid_uri(chapter_uri):
         return True
+
+    @staticmethod
+    def _get_valid_pages(pages):
+        return sorted(list(set(pages)), key=int)
 
 
 class MangaFox(MangaSite):
@@ -292,6 +296,16 @@ class MangaBle(MangaSite):
             return "{0}{1}".format(chapter_uri, page_number)
         else:
             return chapter_uri
+
+    @staticmethod
+    def _get_valid_pages(pages):
+        not_pages, valid_pages = [], []
+        for page in pages:
+            if page in not_pages:
+                valid_pages.append(page)
+            else:
+                not_pages.append(page)
+        return valid_pages
 
 
 class MangaAnimea(MangaSite):
