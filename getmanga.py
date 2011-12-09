@@ -250,26 +250,6 @@ class MangaStream(MangaSite):
         return re.sub('[0-9]+$', page_number, chapter_uri)
 
 
-class MangaToshokan(MangaSite):
-    """class for mangatoshokan site"""
-    site_uri = "http://www.mangatoshokan.com"
-
-    _chapters_re = re.compile(r'href=\'([^ ]+)\' .* ([0-9]+)</a>')
-    _pages_re = re.compile(r'<option value="[^ ]+".*?>([0-9]+)</option>')
-    _image_re = re.compile(r'dir=\'rtl\'><img src="([^ ]+)"')
-
-    @property
-    def title(self):
-        """Returns the right manga title from user input"""
-        return re.sub(r'[^\-a-zA-Z0-9]+', '',
-                      re.sub(r'[ _]', '-', self._title))
-
-    @property
-    def title_uri(self):
-        """Returns the index page's url of manga title"""
-        return "{0}/series/{1}".format(self.site_uri, self.title)
-
-
 class MangaBle(MangaSite):
     """class for mangable site"""
     site_uri = "http://mangable.com"
@@ -377,8 +357,7 @@ SITES = dict(animea=MangaAnimea,
              mangable=MangaBle,
              mangafox=MangaFox,
              mangareader=MangaReader,
-             mangastream=MangaStream,
-             toshokan=MangaToshokan)
+             mangastream=MangaStream)
 
 
 def urlopen(url):

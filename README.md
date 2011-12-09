@@ -11,7 +11,6 @@ Currently supported sites:
 * mangafox.com
 * mangareader.net
 * mangastream.com
-* mangatoshokan.com
 
 ##Usage:
 * Download all manga chapters available:
@@ -52,8 +51,6 @@ Currently supported sites:
 ##Known Issues:
 * Currently doesn't support downloading a single chapter with dot
   in it (normally side stories).
-* Currently doesn't handle capitalization, so you need to write
-  the exact same title as written on the website (only for mangatoshokan).
 
 ##Credits:
 * yudha-gunslinger for [progressbar](http://gunslingerc0de.wordpress.com/2010/08/13/python-command-line-progress-bar/)
