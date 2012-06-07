@@ -30,7 +30,13 @@ except ImportError:
     sys.exit('You need to have "argparse" module installed '
              'to run this script')
 
-__version__ = '0.4'
+try:
+    from lxml import html
+except ImportError:
+    sys.exit('You need to have "lxml" library installed '
+             'to run this script')
+
+__version__ = '0.5'
 
 
 Chapter = namedtuple('Chapter', 'number name uri')
@@ -131,9 +137,9 @@ class GetManga(object):
 class MangaSite(object):
     site_uri = None
 
-    _chapters_re = None
-    _pages_re = None
-    _image_re = None
+    _chapters_css = None
+    _pages_css = None
+    _image_css = None
 
     def __init__(self, title):
         self.input_title = title
@@ -153,32 +159,45 @@ class MangaSite(object):
     @property
     def chapters(self):
         content = urlopen(self.title_uri)
-        _chapters = self._chapters_re.findall(content)
-        _chapters = sorted(set(_chapters), key=lambda x: float(x[1]))
+        doc = html.fromstring(content)
+        _chapters = doc.cssselect(self._chapters_css)
+        _chapters = reversed(_chapters)
 
         chapters = []
-        for (location, number) in _chapters:
+        for _chapter in _chapters:
+            location = _chapter.get('href')
             if self._is_valid_location(location):
+                number = self._get_chapter_number(_chapter)
                 name = self._get_chapter_name(number, location)
                 uri = self._get_chapter_uri(location)
                 chapters.append(Chapter(number, name, uri))
+        print chapters
         return chapters
 
     def get_pages(self, chapter_uri):
         content = urlopen(chapter_uri)
-        _pages = self._pages_re.findall(content)
-        _pages = self._get_valid_pages(_pages)
+        doc = html.fromstring(content)
+        _pages = doc.cssselect(self._pages_css)
         pages = []
         for _page in _pages:
-            name = 'page' + _page.zfill(3) if _page.isdigit() else _page
-            uri = self._get_page_uri(chapter_uri, _page)
+            page = _page.text
+            if any(['Prev' in page, 'Next' in page, 'Comments' in page]):
+                continue
+            name = 'page' + page.zfill(3) if page.isdigit() else page
+            uri = self._get_page_uri(chapter_uri, page)
             pages.append(Page(name, uri))
+        print pages
         return pages
 
     def get_image_uri(self, page_uri):
         content = urlopen(page_uri)
-        uri = self._image_re.findall(content)[0]
-        return uri
+        doc = html.fromstring(content)
+        return doc.cssselect(self._image_css)[0].get('src')
+
+    @staticmethod
+    def _get_chapter_number(chapter):
+        num = re.findall(r' (.*)$', chapter.text)[0]
+        return num
 
     def _get_chapter_name(self, number, location):
         """Returns the appropriate name for the chapter"""
@@ -201,25 +220,27 @@ class MangaSite(object):
     def _is_valid_location(location):
         return True
 
-    @staticmethod
-    def _get_valid_pages(pages):
-        return sorted(list(set(pages)), key=int)
-
 
 class MangaFox(MangaSite):
     """class for mangafox site"""
-    site_uri = "http://www.mangafox.com"
+    site_uri = "http://mangafox.me"
 
-    _chapters_re = re.compile(r'</a>[ \r\n]*<a href="([^ ]+)" class='
-                              r'"ch" title="[^"]+">.* ([\.0-9]+)</a>')
-    _pages_re = re.compile(r'option value="[0-9]+" .*?>([0-9]+)</option')
-    _image_re = re.compile(r'img src="([^ ]+)" onerror="')
+    _chapters_css = "a.tips"
+    _pages_css = "#top_bar option"
+    _image_css = "img#image"
 
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
-        return "{0}/manga/{1}/?no_warning=1".\
-                            format(self.site_uri, self.title)
+        return "{0}/manga/{1}/".format(self.site_uri, self.title)
+
+    @staticmethod
+    def _get_chapter_number(chapter):
+        return chapter.get('href').split('/')[-2].lstrip('c')
+
+    @staticmethod
+    def _get_chapter_uri(location):
+        return location
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
@@ -232,13 +253,17 @@ class MangaStream(MangaSite):
     """class for mangastream site"""
     site_uri = "http://mangastream.com"
 
-    _chapters_re = re.compile(r'href="(/read/[^ ]+)">.*?([0-9]+)')
-    _pages_re = re.compile(r'<a href="[^ ]+".*?>([0-9]{1,2})</a>')
-    _image_re = re.compile(r'src="([^ ]+)" border="0"')
+    _chapters_css = "td a"
+    _pages_css = "div#controls a"
+    _image_css = "img#p"
 
     @property
     def title_uri(self):
         return "{0}/manga/".format(self.site_uri)
+
+    @staticmethod
+    def _get_chapter_number(chapter):
+        return chapter.text.split(' - ')[0]
 
     def _is_valid_location(self, location):
         return "/{0}/".format(self.title) in location
@@ -252,16 +277,19 @@ class MangaBle(MangaSite):
     """class for mangable site"""
     site_uri = "http://mangable.com"
 
-    _chapters_re = re.compile(r'href="([^ ]+)" class=".*>[\n\t]*<p .*>'
-                              r'[\n\t]*<b>.* ([0-9]+)')
-    _pages_re = re.compile(r'option value="[0-9]+".*?>([0-9]+)</opt')
-    _image_re = re.compile(r'<img src="([^ ]+)" id="image"')
+    _chapters_css = "div#newlist ul li a"
+    _pages_css = "div#select_page select option"
+    _image_css = "#image"
 
     @property
     def title(self):
         """Returns the right manga title from user input"""
         return re.sub(r'[^\-_a-z0-9]+', '',
                       re.sub(r'\s', '_', self.input_title.lower()))
+
+    @staticmethod
+    def _get_chapter_number(chapter):
+        return chapter.get('href').split('/')[-2].split('-')[-1]
 
     @staticmethod
     def _get_chapter_uri(location):
@@ -275,25 +303,14 @@ class MangaBle(MangaSite):
         else:
             return chapter_uri
 
-    @staticmethod
-    def _get_valid_pages(pages):
-        not_pages, valid_pages = [], []
-        for page in pages:
-            if page in not_pages:
-                valid_pages.append(page)
-            else:
-                not_pages.append(page)
-        return valid_pages
-
 
 class MangaAnimea(MangaSite):
     """class for manga animea site"""
     site_uri = "http://manga.animea.net"
 
-    _chapters_re = re.compile(r'href="([^ ]+)" id=[^ ]+ title='
-                              r'"[^"]+ ([0-9]+)"')
-    _pages_re = re.compile(r'<option value="[0-9]+".*?>([0-9]+)</option>')
-    _image_re = re.compile(r'<img src="([^ ]+)" onerror')
+    _chapters_css = "li a"
+    _pages_css = "div.topborder select.pageselect option"
+    _image_css = "img.mangaimg"
 
     @property
     def title(self):
@@ -320,9 +337,9 @@ class MangaReader(MangaSite):
     """class for mangareader site"""
     site_uri = "http://www.mangareader.net"
 
-    _chapters_re = re.compile(r'<a href="([^ ]+)">.+ ([0-9]+)</a>')
-    _pages_re = re.compile(r'<option value=.+>\s*([0-9]+)</option>')
-    _image_re = re.compile(r'<img id="img" .+ src="([^ ]+)"')
+    _chapters_css = "div.chico_manga a"
+    _pages_css = "div#selectpage option"
+    _image_css = "img#img"
 
     @property
     def title(self):
