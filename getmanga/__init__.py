@@ -52,7 +52,7 @@ class GetManga(object):
     def latest(self):
         return self.manga.chapters[-1]
 
-    def download(self, chapter):
+    def get(self, chapter):
         path = os.path.expanduser(self.path)
         if not os.path.isdir(path):
             try:
@@ -84,7 +84,7 @@ class GetManga(object):
             semaphore = threading.Semaphore(self.concurrency)
             queue = Queue.Queue()
             for page in pages:
-                thread = threading.Thread(target=self._pagedownload,
+                thread = threading.Thread(target=self._get_image,
                                           args=(semaphore, queue, page))
                 thread.daemon = True
                 thread.start()
@@ -107,7 +107,7 @@ class GetManga(object):
                 cbz.close()
                 os.rename(cbz_tmp, cbz_file)
 
-    def _pagedownload(self, semaphore, queue, page):
+    def _get_image(self, semaphore, queue, page):
         """Downloads page images inside a thread"""
         try:
             semaphore.acquire()

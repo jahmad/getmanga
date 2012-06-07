@@ -13,36 +13,42 @@ Currently supported sites:
 * mangastream.com
 
 ##Usage:
-* Download all manga chapters available:
+* The simplest way:
 
-  `getmanga -s {site} -t {title}`
+  `getmanga {title}`
 
-  example: `getmanga -s mangable -t 'fairy tail'`
+  will download the latest chapter of that title from the default site
+  (mangable.com)
 
-* Download the last chapter of a title:
+* Or if you want to get from specific site:
 
-  `getmanga -s {site} -t {title} -n`
+  `getmanga {title} -s {site}`
 
-  example: `getmanga -s mangastream -t one_piece -n`
+  example: `getmanga 'fairy tail' -s animea`
+
+* Download all chapters of a title:
+
+  `getmanga {title} -s {site} -a`
+
+  example: `getmanga one_piece -s mangastream -n`
 
 * Download specific chapter(s) of a title:
 
-  `getmanga -s {site} -t {title} -c {chapter}`
+  `getmanga {title} -s {site} -c {chapter}`
 
    example:
 
-   * `getmanga -s mangareader -t bleach -c 300`: download only chapter 300
+   * `getmanga bleach -s mangareader -c 300`: download only chapter 300
 
-   * `getmanga -s mangareader -t bleach -c 300-310`: download chapters
+   * `getmanga bleach -s mangareader -c 300-310`: download chapters
      from 300 until 310
 
-   * `getmanga -s mangareader -t bleach -c 300-`: download chapters from
+   * `getmanga bleach -s mangareader -c 300-`: download chapters from
      300 until the end
 
 **Optional arguments:**
 
 * -d/--dir: to save downloaded chapter to another directory.
-* -l/--limit: set concurrent connection limit, default 4 connections.
 * -f/--file: load config file instead of using command arguments.
   (example file included)
 
