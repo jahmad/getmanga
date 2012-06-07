@@ -15,28 +15,28 @@ Currently supported sites:
 ##Usage:
 * Download all manga chapters available:
 
-  `getmanga.py -s {site} -t {title}`
+  `getmanga -s {site} -t {title}`
 
-  example: `getmanga.py -s mangable -t 'fairy tail'`
+  example: `getmanga -s mangable -t 'fairy tail'`
 
 * Download the last chapter of a title:
 
-  `getmanga.py -s {site} -t {title} -n`
+  `getmanga -s {site} -t {title} -n`
 
-  example: `getmanga.py -s mangastream -t one_piece -n`
+  example: `getmanga -s mangastream -t one_piece -n`
 
 * Download specific chapter(s) of a title:
 
-  `getmanga.py -s {site} -t {title} -c {chapter}`
+  `getmanga -s {site} -t {title} -c {chapter}`
 
    example:
 
-   * `getmanga.py -s mangareader -t bleach -c 300`: download only chapter 300
+   * `getmanga -s mangareader -t bleach -c 300`: download only chapter 300
 
-   * `getmanga.py -s mangareader -t bleach -c 300-310`: download chapters
+   * `getmanga -s mangareader -t bleach -c 300-310`: download chapters
      from 300 until 310
 
-   * `getmanga.py -s mangareader -t bleach -c 300-`: download chapters from
+   * `getmanga -s mangareader -t bleach -c 300-`: download chapters from
      300 until the end
 
 **Optional arguments:**
