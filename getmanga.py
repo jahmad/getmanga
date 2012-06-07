@@ -33,8 +33,8 @@ except ImportError:
 __version__ = '0.4'
 
 
-Chapter = namedtuple('Chapter', 'name number uri')
-Page = namedtuple('Page', 'number uri')
+Chapter = namedtuple('Chapter', 'number name uri')
+Page = namedtuple('Page', 'name uri')
 
 
 class MangaException(Exception):
@@ -47,9 +47,8 @@ class GetManga(object):
         self.concurrency = 4
         self.path = '.'
 
-        mangaclass = SITES[site]
         self.title = title
-        self.manga = mangaclass(title)
+        self.manga = SITES[site](title)
 
     @property
     def chapters(self):
@@ -74,11 +73,11 @@ class GetManga(object):
             sys.stdout.write("file {0} exist, skipped download\n".
                                         format(cbz_name))
         else:
-            tmp_file = '{0}.tmp'.format(cbz_file)
+            cbz_tmp = '{0}.tmp'.format(cbz_file)
             pages = self.manga.get_pages(chapter.uri)
 
             try:
-                cbz = zipfile.ZipFile(tmp_file, mode='w',
+                cbz = zipfile.ZipFile(cbz_tmp, mode='w',
                                       compression=zipfile.ZIP_DEFLATED)
             except IOError as msg:
                 raise MangaException(msg)
@@ -108,42 +107,41 @@ class GetManga(object):
                         raise MangaException(image[1])
             except Exception as msg:
                 cbz.close()
-                os.remove(tmp_file)
+                os.remove(cbz_tmp)
                 raise MangaException(msg)
             else:
                 cbz.close()
-                os.rename(tmp_file, cbz_name)
+                os.rename(cbz_tmp, cbz_file)
 
     def _pagedownload(self, semaphore, queue, page):
         """Downloads page images inside a thread"""
         try:
             semaphore.acquire()
-            image_uri = self.manga.get_image_uri(page.uri)
-            image_ext = image_uri.split('.')[-1]
-            image_name = 'page%03d.%s' % (int(page.number), image_ext)
-            image_file = urlopen(image_uri)
+            uri = self.manga.get_image_uri(page.uri)
+            name = page.name + os.path.extsep + uri.split('.')[-1]
+            image = urlopen(uri)
         except MangaException as msg:
             queue.put((None, msg))
         else:
-            queue.put((image_name, image_file))
+            queue.put((name, image))
         finally:
             semaphore.release()
 
 
 class MangaSite(object):
-    site_url = None
+    site_uri = None
 
     _chapters_re = None
     _pages_re = None
     _image_re = None
 
-    def __init__(self, title=None):
-        self._title = title
+    def __init__(self, title):
+        self.input_title = title
 
     @property
     def title(self):
         """Return the right manga title from user input"""
-        title = self._title.lower()
+        title = self.input_title.lower()
         return re.sub(r'[^a-z0-9]+', '_',
                       re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', title))
 
@@ -160,11 +158,10 @@ class MangaSite(object):
 
         chapters = []
         for (location, number) in _chapters:
-            if self._is_valid_uri(location):
+            if self._is_valid_location(location):
                 name = self._get_chapter_name(number, location)
                 uri = self._get_chapter_uri(location)
-                chapter = Chapter(name, number, uri)
-                chapters.append(chapter)
+                chapters.append(Chapter(number, name, uri))
         return chapters
 
     def get_pages(self, chapter_uri):
@@ -173,9 +170,9 @@ class MangaSite(object):
         _pages = self._get_valid_pages(_pages)
         pages = []
         for _page in _pages:
+            name = 'page' + _page.zfill(3) if _page.isdigit() else _page
             uri = self._get_page_uri(chapter_uri, _page)
-            page = Page(_page, uri)
-            pages.append(page)
+            pages.append(Page(name, uri))
         return pages
 
     def get_image_uri(self, page_uri):
@@ -187,9 +184,10 @@ class MangaSite(object):
         """Returns the appropriate name for the chapter"""
         try:
             volume = re.search(r'v[0-9]+', location).group()
-            name = "{0}_{1}c{2}".format(self.title, volume, number)
         except AttributeError:
             name = "{0}_c{1}".format(self.title, number)
+        else:
+            name = "{0}_{1}c{2}".format(self.title, volume, number)
         return name
 
     def _get_chapter_uri(self, location):
@@ -200,7 +198,7 @@ class MangaSite(object):
         return "{0}/{1}".format(chapter_uri, page_number)
 
     @staticmethod
-    def _is_valid_uri(chapter_uri):
+    def _is_valid_location(location):
         return True
 
     @staticmethod
@@ -242,8 +240,8 @@ class MangaStream(MangaSite):
     def title_uri(self):
         return "{0}/manga/".format(self.site_uri)
 
-    def _is_valid_uri(self, chapter_uri):
-        return "/{0}/".format(self.title) in chapter_uri
+    def _is_valid_location(self, location):
+        return "/{0}/".format(self.title) in location
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
@@ -263,7 +261,7 @@ class MangaBle(MangaSite):
     def title(self):
         """Returns the right manga title from user input"""
         return re.sub(r'[^\-_a-z0-9]+', '',
-                      re.sub(r'\s', '_', self._title.lower()))
+                      re.sub(r'\s', '_', self.input_title.lower()))
 
     @staticmethod
     def _get_chapter_uri(location):
@@ -300,7 +298,7 @@ class MangaAnimea(MangaSite):
     @property
     def title(self):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^a-z0-9_]+', '-', self._title.lower())
+        return re.sub(r'[^a-z0-9_]+', '-', self.input_title.lower())
 
     @property
     def title_uri(self):
@@ -313,9 +311,9 @@ class MangaAnimea(MangaSite):
         return re.sub(r'.html$', '-page-{0}.html'.format(page_number),
                       chapter_uri)
 
-    def _is_valid_uri(self, chapter_uri):
+    def _is_valid_location(self, location):
         """Returns boolean status of a chapter validity"""
-        return self.title in chapter_uri
+        return self.title in location
 
 
 class MangaReader(MangaSite):
@@ -330,7 +328,7 @@ class MangaReader(MangaSite):
     def title(self):
         """Returns the right manga title from user input"""
         return re.sub(r'[^\-a-z0-9]', '',
-                      re.sub(r'[ _]', '-', self._title.lower()))
+                      re.sub(r'[ _]', '-', self.input_title.lower()))
 
     @property
     def title_uri(self):
