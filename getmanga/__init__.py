@@ -155,7 +155,7 @@ class MangaSite(object):
         for _chapter in _chapters:
             location = _chapter.get('href')
             if self._is_valid_location(location):
-                number = self._get_chapter_number(_chapter)
+                number = self._get_chapter_number(_chapter).lstrip('0')
                 name = self._get_chapter_name(number, location)
                 uri = self._get_chapter_uri(location)
                 chapters.append(Chapter(number, name, uri))
@@ -182,8 +182,7 @@ class MangaSite(object):
 
     @staticmethod
     def _get_chapter_number(chapter):
-        num = re.findall(r' (.*)$', chapter.text)[0]
-        return num
+        return chapter.text.split(' ')[-1]
 
     def _get_chapter_name(self, number, location):
         """Returns the appropriate name for the chapter"""
@@ -294,7 +293,7 @@ class MangaAnimea(MangaSite):
     """class for manga animea site"""
     site_uri = "http://manga.animea.net"
 
-    _chapters_css = "li a"
+    _chapters_css = "ul.chapters_list li a"
     _pages_css = "div.topborder select.pageselect option"
     _image_css = "img.mangaimg"
 
@@ -323,7 +322,7 @@ class MangaReader(MangaSite):
     """class for mangareader site"""
     site_uri = "http://www.mangareader.net"
 
-    _chapters_css = "div.chico_manga a"
+    _chapters_css = "#chapterlist td a"
     _pages_css = "div#selectpage option"
     _image_css = "img#img"
 
@@ -344,12 +343,13 @@ class MangaReader(MangaSite):
             uri = "{0}/{1}".format(self.site_uri, self.title)
         return uri
 
-    def _get_page_uri(self, chapter_uri, page_number='1'):
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_number='1'):
         """Returns manga image page url"""
         if chapter_uri.endswith('.html'):
             page = re.sub(r'\-[0-9]+/', "-{0}/".format(page_number),
                           chapter_uri)
-            return "{0}{1}".format(self.site_uri, page)
+            return "{0}{1}".format(chapter_uri, page)
         else:
             return "{0}/{1}".format(chapter_uri, page_number)
 
