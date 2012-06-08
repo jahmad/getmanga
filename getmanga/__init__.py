@@ -157,7 +157,7 @@ class MangaSite(object):
         for _chapter in _chapters:
             location = _chapter.get('href')
             if self._is_valid_location(location):
-                number = self._get_chapter_number(_chapter).lstrip('0')
+                number = self._get_chapter_number(_chapter)
                 name = self._get_chapter_name(number, location)
                 uri = self._get_chapter_uri(location)
                 chapters.append(Chapter(number, name, uri))
@@ -223,7 +223,8 @@ class MangaFox(MangaSite):
 
     @staticmethod
     def _get_chapter_number(chapter):
-        return chapter.get('href').split('/')[-2].lstrip('c')
+        num = chapter.get('href').split('/')[-2].lstrip('c').lstrip('0')
+        return num if num else 0
 
     @staticmethod
     def _get_chapter_uri(location):
