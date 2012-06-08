@@ -124,6 +124,7 @@ class GetManga(object):
 
 class MangaSite(object):
     site_uri = None
+    descending_list = True
 
     _chapters_css = None
     _pages_css = None
@@ -149,7 +150,8 @@ class MangaSite(object):
         content = urlopen(self.title_uri)
         doc = html.fromstring(content)
         _chapters = doc.cssselect(self._chapters_css)
-        _chapters = reversed(_chapters)
+        if self.descending_list:
+            _chapters = reversed(_chapters)
 
         chapters = []
         for _chapter in _chapters:
@@ -321,6 +323,7 @@ class MangaAnimea(MangaSite):
 class MangaReader(MangaSite):
     """class for mangareader site"""
     site_uri = "http://www.mangareader.net"
+    descending_list = False
 
     _chapters_css = "#chapterlist td a"
     _pages_css = "div#selectpage option"
