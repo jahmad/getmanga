@@ -189,16 +189,16 @@ class MangaSite(object):
 
     @staticmethod
     def _get_chapter_number(chapter):
-        return chapter.text.split(' ')[-1]
+        return chapter.text.split(' ')[-1].strip('\n\t')
 
     def _get_chapter_name(self, number, location):
         """Returns the appropriate name for the chapter"""
         try:
             volume = re.search(r'v[0-9]+', location).group()
         except AttributeError:
-            name = "{0}_c{1}".format(self.title, number)
+            name = "{0}_c{1}".format(self.title, number.zfill(3))
         else:
-            name = "{0}_{1}c{2}".format(self.title, volume, number)
+            name = "{0}_{1}c{2}".format(self.title, volume, number.zfill(3))
         return name
 
     def _get_chapter_uri(self, location):
@@ -297,6 +297,29 @@ class MangaBle(MangaSite):
             return chapter_uri
 
 
+class MangaHere(MangaSite):
+    """class for mangahere sire"""
+    site_uri = "http://www.mangahere.com"
+
+    _chapters_css = "div.detail_list ul li a"
+    _pages_css = "section.readpage_top div.go_page select option"
+    _image_css = "img#image"
+
+    @property
+    def title_uri(self):
+        """Returns the index page's url of manga title"""
+        return "{0}/manga/{1}/".format(self.site_uri, self.title)
+
+    @staticmethod
+    def _get_chapter_uri(location):
+        return location
+
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_number):
+        """Returns manga image page url"""
+        return "{0}{1}.html".format(chapter_uri, page_number)
+
+
 class MangaAnimea(MangaSite):
     """class for manga animea site"""
     site_uri = "http://manga.animea.net"
@@ -367,6 +390,7 @@ class MangaReader(MangaSite):
 SITES = dict(animea=MangaAnimea,
              mangable=MangaBle,
              mangafox=MangaFox,
+             mangahere=MangaHere,
              mangareader=MangaReader,
              mangastream=MangaStream)
 

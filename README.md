@@ -9,6 +9,7 @@ Currently supported sites:
 * manga.animea.net
 * mangable.com
 * mangafox.com
+* mangahere.com
 * mangareader.net
 * mangastream.com
 
@@ -53,10 +54,6 @@ Currently supported sites:
   (example file included)
 
   *Note: only support downloading all or new chapter with this mode.*
-
-##Known Issues:
-* Currently doesn't support downloading a single chapter with dot
-  in it (normally side stories).
 
 ##Credits:
 * yudha-gunslinger for [progressbar](http://gunslingerc0de.wordpress.com/2010/08/13/python-command-line-progress-bar/)
