@@ -5,26 +5,32 @@
 
 from __future__ import division
 
-import Queue
-import StringIO
-import gzip
 import os
 import re
 import sys
-import threading
-import urllib2
-import zipfile
 
-try:
-    from collections import namedtuple
-except ImportError:
+pyversion = sys.version_info
+if pyversion < (2, 6, 0):
     sys.exit("You need at least python 2.6 to run this sript")
+elif pyversion >= (3, 0, 0):
+    from io import BytesIO
+    from urllib.error import HTTPError
+    from urllib.request import Request, urlopen
+    from queue import Queue
+else:
+    from cStringIO import StringIO as BytesIO
+    from urllib2 import HTTPError, Request, urlopen
+    from Queue import Queue
+
+from collections import namedtuple
+from gzip import GzipFile
+from threading import Semaphore, Thread
+from zipfile import ZIP_DEFLATED, ZipFile
 
 try:
     from lxml import html
 except ImportError:
-    sys.exit('You need to have "lxml" library installed '
-             'to run this script')
+    sys.exit("You need to have 'lxml' library installed to run this script")
 
 
 Chapter = namedtuple('Chapter', 'number name uri')
@@ -71,8 +77,7 @@ class GetManga(object):
             pages = self.manga.get_pages(chapter.uri)
 
             try:
-                cbz = zipfile.ZipFile(cbz_tmp, mode='w',
-                                      compression=zipfile.ZIP_DEFLATED)
+                cbz = ZipFile(cbz_tmp, mode='w', compression=ZIP_DEFLATED)
             except IOError as msg:
                 raise MangaException(msg)
 
@@ -81,11 +86,11 @@ class GetManga(object):
             progress(0, len(pages))
 
             threads = []
-            semaphore = threading.Semaphore(self.concurrency)
-            queue = Queue.Queue()
+            semaphore = Semaphore(self.concurrency)
+            queue = Queue()
             for page in pages:
-                thread = threading.Thread(target=self._get_image,
-                                          args=(semaphore, queue, page))
+                thread = Thread(target=self._get_image,
+                                args=(semaphore, queue, page))
                 thread.daemon = True
                 thread.start()
                 threads.append(thread)
@@ -113,7 +118,7 @@ class GetManga(object):
             semaphore.acquire()
             uri = self.manga.get_image_uri(page.uri)
             name = page.name + os.path.extsep + uri.split('.')[-1]
-            image = urlopen(uri)
+            image = uriopen(uri)
         except MangaException as msg:
             queue.put((None, msg))
         else:
@@ -147,7 +152,7 @@ class MangaSite(object):
 
     @property
     def chapters(self):
-        content = urlopen(self.title_uri)
+        content = uriopen(self.title_uri).decode('utf-8')
         doc = html.fromstring(content)
         _chapters = doc.cssselect(self._chapters_css)
         if self.descending_list:
@@ -164,7 +169,7 @@ class MangaSite(object):
         return chapters
 
     def get_pages(self, chapter_uri):
-        content = urlopen(chapter_uri)
+        content = uriopen(chapter_uri).decode('utf-8')
         doc = html.fromstring(content)
         _pages = doc.cssselect(self._pages_css)
         pages = []
@@ -178,7 +183,7 @@ class MangaSite(object):
         return pages
 
     def get_image_uri(self, page_uri):
-        content = urlopen(page_uri)
+        content = uriopen(page_uri).decode('utf-8')
         doc = html.fromstring(content)
         return doc.cssselect(self._image_css)[0].get('src')
 
@@ -340,7 +345,8 @@ class MangaReader(MangaSite):
     def title_uri(self):
         """Returns the index page's url of manga title"""
         try:
-            content = urlopen("{0}/alphabetical".format(self.site_uri))
+            content = uriopen("{0}/alphabetical".format(self.site_uri)). \
+                                                            decode('utf-8')
             page = re.findall(r'[0-9]+/' + self.title + '.html', content)[0]
             uri = "{0}/{1}".format(self.site_uri, page)
         except IndexError:
@@ -365,9 +371,9 @@ SITES = dict(animea=MangaAnimea,
              mangastream=MangaStream)
 
 
-def urlopen(url):
+def uriopen(url):
     """Returns data available (html or image file) from a url"""
-    request = urllib2.Request(url)
+    request = Request(url)
     request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; U; ' \
                        'Intel Mac OS X 10_6_5; id) AppleWebKit/533.19.4 ' \
                        '(KHTML, like Gecko) Version/5.0.3 Safari/533.19.4')
@@ -377,9 +383,9 @@ def urlopen(url):
     retry = 0
     while retry < 5:
         try:
-            response = urllib2.urlopen(request, timeout=15)
+            response = urlopen(request, timeout=15)
             data = response.read()
-        except urllib2.HTTPError as msg:
+        except HTTPError as msg:
             raise MangaException("HTTP Error: {0} - {1}\n".
                                                 format(msg.code, url))
         except Exception:
@@ -397,8 +403,8 @@ def urlopen(url):
             else:
                 retry = 5
             if ('content-encoding', 'gzip') in response.headers.items():
-                compressed = StringIO.StringIO(data)
-                data = gzip.GzipFile(fileobj=compressed).read()
+                compressed = BytesIO(data)
+                data = GzipFile(fileobj=compressed).read()
             response.close()
     if data:
         return data

@@ -3,9 +3,12 @@
 # Released subject to the MIT License.
 # Please see http://en.wikipedia.org/wiki/MIT_License
 
-import ConfigParser
 import os
 import sys
+try:
+    import configparser
+except ImportError:
+    import ConfigParser as configparser
 
 import pkg_resources
 
@@ -66,7 +69,7 @@ def cmdparse():
 
 def configparse(filepath):
     """Returns parsed config from an ini file"""
-    parser = ConfigParser.SafeConfigParser()
+    parser = configparser.SafeConfigParser()
     parser.read(filepath)
     config = []
     for title in parser.sections():
