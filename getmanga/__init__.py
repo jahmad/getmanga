@@ -163,7 +163,7 @@ class MangaSite(object):
             location = _chapter.get('href')
             if self._is_valid_location(location):
                 number = self._get_chapter_number(_chapter)
-                name = self._get_chapter_name(number, location)
+                name = self._get_chapter_name(str(number), location)
                 uri = self._get_chapter_uri(location)
                 chapters.append(Chapter(number, name, uri))
         return chapters
@@ -177,9 +177,8 @@ class MangaSite(object):
             page = _page.text
             if any(['Prev' in page, 'Next' in page, 'Comments' in page]):
                 continue
-            name = 'page' + page.zfill(3) if page.isdigit() else page
             uri = self._get_page_uri(chapter_uri, page)
-            pages.append(Page(name, uri))
+            pages.append(Page(page, uri))
         return pages
 
     def get_image_uri(self, page_uri):
