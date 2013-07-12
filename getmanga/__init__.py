@@ -71,7 +71,7 @@ class GetManga(object):
 
         if os.path.isfile(cbz_file):
             sys.stdout.write("file {0} exist, skipped download\n".
-                                        format(cbz_name))
+                             format(cbz_name))
         else:
             cbz_tmp = '{0}.tmp'.format(cbz_file)
             pages = self.manga.get_pages(chapter.uri)
@@ -82,7 +82,7 @@ class GetManga(object):
                 raise MangaException(msg)
 
             sys.stdout.write("downloading {0} {1}:\n".
-                                        format(self.title, chapter.number))
+                             format(self.title, chapter.number))
             progress(0, len(pages))
 
             threads = []
@@ -297,7 +297,7 @@ class MangaBle(MangaSite):
 
 
 class MangaHere(MangaSite):
-    """class for mangahere sire"""
+    """class for mangahere site"""
     site_uri = "http://www.mangahere.com"
 
     _chapters_css = "div.detail_list ul li a"
@@ -368,7 +368,7 @@ class MangaReader(MangaSite):
         """Returns the index page's url of manga title"""
         try:
             content = uriopen("{0}/alphabetical".format(self.site_uri)). \
-                                                            decode('utf-8')
+                decode('utf-8')
             page = re.findall(r'[0-9]+/' + self.title + '.html', content)[0]
             uri = "{0}/{1}".format(self.site_uri, page)
         except IndexError:
@@ -397,8 +397,8 @@ SITES = dict(animea=MangaAnimea,
 def uriopen(url):
     """Returns data available (html or image file) from a url"""
     request = Request(url)
-    request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; U; ' \
-                       'Intel Mac OS X 10_6_5; id) AppleWebKit/533.19.4 ' \
+    request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; U; '
+                       'Intel Mac OS X 10_6_5; id) AppleWebKit/533.19.4 '
                        '(KHTML, like Gecko) Version/5.0.3 Safari/533.19.4')
     request.add_header('Accept-encoding', 'gzip')
 
@@ -410,7 +410,7 @@ def uriopen(url):
             data = response.read()
         except HTTPError as msg:
             raise MangaException("HTTP Error: {0} - {1}\n".
-                                                format(msg.code, url))
+                                 format(msg.code, url))
         except Exception:
             #what may goes here: urllib2.URLError, socket.timeout,
             #                    httplib.BadStatusLine
