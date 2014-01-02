@@ -9,10 +9,7 @@ import os
 import re
 import sys
 
-pyversion = sys.version_info
-if pyversion < (2, 6, 0):
-    sys.exit("You need at least python 2.6 to run this sript")
-elif pyversion >= (3, 0, 0):
+if sys.version.info >= (3, 0, 0):
     from io import BytesIO
     from urllib.error import HTTPError
     from urllib.request import Request, urlopen
@@ -27,10 +24,7 @@ from gzip import GzipFile
 from threading import Semaphore, Thread
 from zipfile import ZIP_DEFLATED, ZipFile
 
-try:
-    from lxml import html
-except ImportError:
-    sys.exit("You need to have 'lxml' library installed to run this script")
+from lxml import html
 
 
 Chapter = namedtuple('Chapter', 'number name uri')

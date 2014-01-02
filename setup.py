@@ -1,9 +1,12 @@
 #!/usr/bin/env python
 
-from setuptools import setup, find_packages
-import sys, os
+from setuptools import setup
+import sys
 
 version = '0.5'
+
+if sys.version_info < (2, 6, 0):
+    sys.exit("Python 2.6 or newer is required to run this program.")
 
 setup(name='getmanga',
       version=version,
@@ -18,7 +21,7 @@ setup(name='getmanga',
       license='MIT',
       packages=['getmanga'],
       zip_safe=False,
-      install_requires=['lxml'],
+      install_requires=['lxml', 'cssselect'],
       entry_points="""
       [console_scripts]
       getmanga = getmanga.cli:main
