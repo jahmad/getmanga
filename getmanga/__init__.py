@@ -381,9 +381,8 @@ SITES = dict(animea=MangaAnimea,
 def uriopen(url):
     """Returns data available (html or image file) from a url"""
     request = Request(url)
-    request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; U; '
-                       'Intel Mac OS X 10_6_5; id) AppleWebKit/533.19.4 '
-                       '(KHTML, like Gecko) Version/5.0.3 Safari/533.19.4')
+    request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) '
+                       'AppleWebKit/537.73.11 (KHTML, like Gecko) Version/7.0.1 Safari/537.73.11')
     request.add_header('Accept-encoding', 'gzip')
 
     data = None
