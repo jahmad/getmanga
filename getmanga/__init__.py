@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# Copyright (c) 2010-2012, Jamaludin Ahmad
+# Copyright (c) 2010-2014, Jamaludin Ahmad
 # Released subject to the MIT License.
 # Please see http://en.wikipedia.org/wiki/MIT_License
 
@@ -64,8 +64,7 @@ class GetManga(object):
         cbz_file = os.path.join(path, cbz_name)
 
         if os.path.isfile(cbz_file):
-            sys.stdout.write("file {0} exist, skipped download\n".
-                             format(cbz_name))
+            sys.stdout.write("file {0} exist, skipped download\n".format(cbz_name))
         else:
             cbz_tmp = '{0}.tmp'.format(cbz_file)
             pages = self.manga.get_pages(chapter.uri)
@@ -75,16 +74,14 @@ class GetManga(object):
             except IOError as msg:
                 raise MangaException(msg)
 
-            sys.stdout.write("downloading {0} {1}:\n".
-                             format(self.title, chapter.number))
+            sys.stdout.write("downloading {0} {1}:\n".format(self.title, chapter.number))
             progress(0, len(pages))
 
             threads = []
             semaphore = Semaphore(self.concurrency)
             queue = Queue()
             for page in pages:
-                thread = Thread(target=self._get_image,
-                                args=(semaphore, queue, page))
+                thread = Thread(target=self._get_image, args=(semaphore, queue, page))
                 thread.daemon = True
                 thread.start()
                 threads.append(thread)
@@ -136,8 +133,7 @@ class MangaSite(object):
     def title(self):
         """Return the right manga title from user input"""
         title = self.input_title.lower()
-        return re.sub(r'[^a-z0-9]+', '_',
-                      re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', title))
+        return re.sub(r'[^a-z0-9]+', '_', re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', title))
 
     @property
     def title_uri(self):
@@ -231,8 +227,7 @@ class MangaFox(MangaSite):
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
         """Returns manga image page url"""
-        return re.sub(r'[0-9]+.html$', "{0}.html".format(page_number),
-                      chapter_uri)
+        return re.sub(r'[0-9]+.html$', "{0}.html".format(page_number), chapter_uri)
 
 
 class MangaStream(MangaSite):
@@ -270,8 +265,7 @@ class MangaBle(MangaSite):
     @property
     def title(self):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^\-_a-z0-9]+', '',
-                      re.sub(r'\s', '_', self.input_title.lower()))
+        return re.sub(r'[^\-_a-z0-9]+', '', re.sub(r'\s', '_', self.input_title.lower()))
 
     @staticmethod
     def _get_chapter_number(chapter):
@@ -334,8 +328,7 @@ class MangaAnimea(MangaSite):
     @staticmethod
     def _get_page_uri(chapter_uri, page_number=1):
         """Returns manga image page url"""
-        return re.sub(r'.html$', '-page-{0}.html'.format(page_number),
-                      chapter_uri)
+        return re.sub(r'.html$', '-page-{0}.html'.format(page_number), chapter_uri)
 
     def _is_valid_location(self, location):
         """Returns boolean status of a chapter validity"""
@@ -354,15 +347,13 @@ class MangaReader(MangaSite):
     @property
     def title(self):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^\-a-z0-9]', '',
-                      re.sub(r'[ _]', '-', self.input_title.lower()))
+        return re.sub(r'[^\-a-z0-9]', '', re.sub(r'[ _]', '-', self.input_title.lower()))
 
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
         try:
-            content = uriopen("{0}/alphabetical".format(self.site_uri)). \
-                decode('utf-8')
+            content = uriopen("{0}/alphabetical".format(self.site_uri)).decode('utf-8')
             page = re.findall(r'[0-9]+/' + self.title + '.html', content)[0]
             uri = "{0}/{1}".format(self.site_uri, page)
         except IndexError:
@@ -373,8 +364,7 @@ class MangaReader(MangaSite):
     def _get_page_uri(chapter_uri, page_number='1'):
         """Returns manga image page url"""
         if chapter_uri.endswith('.html'):
-            page = re.sub(r'\-[0-9]+/', "-{0}/".format(page_number),
-                          chapter_uri)
+            page = re.sub(r'\-[0-9]+/', "-{0}/".format(page_number), chapter_uri)
             return "{0}{1}".format(chapter_uri, page)
         else:
             return "{0}/{1}".format(chapter_uri, page_number)
@@ -403,16 +393,14 @@ def uriopen(url):
             response = urlopen(request, timeout=15)
             data = response.read()
         except HTTPError as msg:
-            raise MangaException("HTTP Error: {0} - {1}\n".
-                                 format(msg.code, url))
+            raise MangaException("HTTP Error: {0} - {1}\n".format(msg.code, url))
         except Exception:
             #what may goes here: urllib2.URLError, socket.timeout,
             #                    httplib.BadStatusLine
             retry += 1
         else:
             if 'content-length' in response.headers.keys():
-                if len(data) == \
-                        int(response.headers.getheader('content-length')):
+                if len(data) == int(response.headers.getheader('content-length')):
                     retry = 5
                 else:
                     data = None

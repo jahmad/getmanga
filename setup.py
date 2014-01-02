@@ -3,6 +3,7 @@
 from setuptools import setup
 import sys
 
+
 version = '0.5'
 
 if sys.version_info < (2, 6, 0):

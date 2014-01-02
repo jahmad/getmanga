@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# Copyright (c) 2010, Jamaludin Ahmad
+# Copyright (c) 2010-2014, Jamaludin Ahmad
 # Released subject to the MIT License.
 # Please see http://en.wikipedia.org/wiki/MIT_License
 
@@ -15,8 +15,7 @@ import pkg_resources
 try:
     import argparse
 except ImportError:
-    sys.exit('You need to have "argparse" module installed '
-             'to run this script')
+    sys.exit('You need to have "argparse" module installed to run this script')
 
 from getmanga import SITES, MangaException, GetManga
 
@@ -27,20 +26,14 @@ version = pkg_resources.require("GetManga")[0].version
 def cmdparse():
     """Returns parsed arguments from command line"""
     parser = argparse.ArgumentParser()
-    parser.add_argument('-f', '--file', type=str,
-                        help="%(prog)s config file")
-    parser.add_argument('title', type=str,
-                        help="manga title to download")
-    parser.add_argument('-s', '--site', choices=SITES.keys(),
-                        default='mangable',
+    parser.add_argument('-f', '--file', type=str, help="%(prog)s config file")
+    parser.add_argument('title', type=str, help="manga title to download")
+    parser.add_argument('-s', '--site', choices=SITES.keys(), default='mangable',
                         help="manga site to download from")
     group = parser.add_mutually_exclusive_group()
-    group.add_argument('-a', '--all', action='store_true',
-                       help="download all chapters available")
-    group.add_argument('-c', '--chapter', type=str,
-                       help="chapter(s) number to download")
-    parser.add_argument('-d', '--dir', type=str, default='.',
-                        help='download directory')
+    group.add_argument('-a', '--all', action='store_true', help="download all chapters available")
+    group.add_argument('-c', '--chapter', type=str, help="chapter(s) number to download")
+    parser.add_argument('-d', '--dir', type=str, default='.', help='download directory')
     parser.add_argument('-v', '--version', action='version',
                         version='{0} {1}'.format(parser.prog, version),
                         help="show program version and exit")
@@ -52,8 +45,7 @@ def cmdparse():
     if args.file:
         if not os.path.isfile(args.file):
             parser.print_usage()
-            sys.exit("{0}: error: config file does not exit".\
-                                                format(parser.prog))
+            sys.exit("{0}: error: config file does not exit".format(parser.prog))
     if args.chapter:
         chapter = args.chapter.split('-')
         if len(chapter) == 2:
