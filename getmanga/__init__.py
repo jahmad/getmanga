@@ -9,7 +9,7 @@ import os
 import re
 import sys
 
-if sys.version.info >= (3, 0, 0):
+if sys.version_info >= (3, 0, 0):
     from io import BytesIO
     from urllib.error import HTTPError
     from urllib.request import Request, urlopen
