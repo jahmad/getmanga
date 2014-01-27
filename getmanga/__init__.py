@@ -65,43 +65,45 @@ class GetManga(object):
 
         if os.path.isfile(cbz_file):
             sys.stdout.write("file {0} exist, skipped download\n".format(cbz_name))
+            return
+
+        cbz_tmp = '{0}.tmp'.format(cbz_file)
+
+        try:
+            cbz = ZipFile(cbz_tmp, mode='w', compression=ZIP_DEFLATED)
+        except IOError as msg:
+            raise MangaException(msg)
+
+        sys.stdout.write("downloading {0} {1}:\n".format(self.title, chapter.number))
+
+        pages = self.manga.get_pages(chapter.uri)
+        progress(0, len(pages))
+
+        threads = []
+        semaphore = Semaphore(self.concurrency)
+        queue = Queue()
+        for page in pages:
+            thread = Thread(target=self._get_image, args=(semaphore, queue, page))
+            thread.daemon = True
+            thread.start()
+            threads.append(thread)
+
+        try:
+            for thread in threads:
+                thread.join()
+                image = queue.get()
+                if image[0]:
+                    cbz.writestr(image[0], image[1])
+                    progress(len(cbz.filelist), len(pages))
+                else:
+                    raise MangaException(image[1])
+        except Exception as msg:
+            cbz.close()
+            os.remove(cbz_tmp)
+            raise MangaException(msg)
         else:
-            cbz_tmp = '{0}.tmp'.format(cbz_file)
-            pages = self.manga.get_pages(chapter.uri)
-
-            try:
-                cbz = ZipFile(cbz_tmp, mode='w', compression=ZIP_DEFLATED)
-            except IOError as msg:
-                raise MangaException(msg)
-
-            sys.stdout.write("downloading {0} {1}:\n".format(self.title, chapter.number))
-            progress(0, len(pages))
-
-            threads = []
-            semaphore = Semaphore(self.concurrency)
-            queue = Queue()
-            for page in pages:
-                thread = Thread(target=self._get_image, args=(semaphore, queue, page))
-                thread.daemon = True
-                thread.start()
-                threads.append(thread)
-
-            try:
-                for thread in threads:
-                    thread.join()
-                    image = queue.get()
-                    if image[0]:
-                        cbz.writestr(image[0], image[1])
-                        progress(len(cbz.filelist), len(pages))
-                    else:
-                        raise MangaException(image[1])
-            except Exception as msg:
-                cbz.close()
-                os.remove(cbz_tmp)
-                raise MangaException(msg)
-            else:
-                cbz.close()
-                os.rename(cbz_tmp, cbz_file)
+            cbz.close()
+            os.rename(cbz_tmp, cbz_file)
 
     def _get_image(self, semaphore, queue, page):
         """Downloads page images inside a thread"""
