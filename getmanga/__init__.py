@@ -91,12 +91,12 @@ class GetManga(object):
         try:
             for thread in threads:
                 thread.join()
-                image = queue.get()
-                if image[0]:
-                    cbz.writestr(image[0], image[1])
+                name, image = queue.get()
+                if name:
+                    cbz.writestr(name, image)
                     progress(len(cbz.filelist), len(pages))
                 else:
-                    raise MangaException(image[1])
+                    raise MangaException(image)
         except Exception as msg:
             cbz.close()
             os.remove(cbz_tmp)
