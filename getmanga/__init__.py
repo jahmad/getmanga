@@ -166,8 +166,8 @@ class MangaSite(object):
         _pages = doc.cssselect(self._pages_css)
         pages = []
         for _page in _pages:
-            page = _page.text
-            if any(['Prev' in page, 'Next' in page, 'Comments' in page]):
+            page = self._get_page_number(_page.text)
+            if not page:
                 continue
             uri = self._get_page_uri(chapter_uri, page)
             pages.append(Page(page, uri))
@@ -198,6 +198,12 @@ class MangaSite(object):
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
         return "{0}/{1}".format(chapter_uri, page_number)
+
+    @staticmethod
+    def _get_page_number(page_text):
+        if any(['Prev' in page, 'Next' in page, 'Comments' in page]):
+            return None
+        return page_text
 
     @staticmethod
     def _is_valid_location(location):
@@ -237,12 +243,12 @@ class MangaStream(MangaSite):
     site_uri = "http://mangastream.com"
 
     _chapters_css = "td a"
-    _pages_css = "div#controls a"
-    _image_css = "img#p"
+    _pages_css = "div.btn-group ul.dropdown-menu li a"
+    _image_css = "img#manga-page"
 
     @property
     def title_uri(self):
-        return "{0}/manga/".format(self.site_uri)
+        return "{0}/manga/{1}/".format(self.site_uri, self.title)
 
     @staticmethod
     def _get_chapter_number(chapter):
@@ -250,6 +256,16 @@ class MangaStream(MangaSite):
 
     def _is_valid_location(self, location):
         return "/{0}/".format(self.title) in location
+
+    @staticmethod
+    def _get_chapter_uri(location):
+        return location
+
+    @staticmethod
+    def _get_page_number(page_text):
+        if not page_text or page_text == 'Full List':
+            return None
+        return re.search('[0-9]+', page_text).group(0)
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
@@ -298,6 +314,11 @@ class MangaHere(MangaSite):
     def title_uri(self):
         """Returns the index page's url of manga title"""
         return "{0}/manga/{1}/".format(self.site_uri, self.title)
+
+    @staticmethod
+    def _get_chapter_number(chapter):
+        num = chapter.get('href').split('/')[-2].lstrip('c').lstrip('0')
+        return num if num else 0
 
     @staticmethod
     def _get_chapter_uri(location):
@@ -408,7 +429,7 @@ def uriopen(url):
                     retry += 1
             else:
                 retry = 5
-            if ('content-encoding', 'gzip') in response.headers.items():
+            if ('Content-Encoding', 'gzip') in response.headers.items():
                 compressed = BytesIO(data)
                 data = GzipFile(fileobj=compressed).read()
             response.close()

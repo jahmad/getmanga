@@ -52,7 +52,7 @@ def cmdparse():
             args.chapter = None
             args.begin = chapter[0]
             args.end = chapter[1] if chapter[1] else None
-        if args.begin and args.end and (args.begin > args.end):
+        if args.begin and args.end and (int(args.begin) > int(args.end)):
             parser.print_usage()
             sys.exit("{0}: error: invalid chapter interval, the end "
                      "should be bigger than start".format(parser.prog))
