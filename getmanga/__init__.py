@@ -201,7 +201,7 @@ class MangaSite(object):
 
     @staticmethod
     def _get_page_number(page_text):
-        if any(['Prev' in page, 'Next' in page, 'Comments' in page]):
+        if any(['Prev' in page_text, 'Next' in page_text, 'Comments' in page_text]):
             return None
         return page_text
 
