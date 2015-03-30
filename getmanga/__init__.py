@@ -176,7 +176,12 @@ class MangaSite(object):
     def get_image_uri(self, page_uri):
         content = uriopen(page_uri).decode('utf-8')
         doc = html.fromstring(content)
-        return doc.cssselect(self._image_css)[0].get('src')
+        image_uri = doc.cssselect(self._image_css)[0].get('src')
+        # workaround for mangahere
+        query = image_uri.find('?')
+        if query != -1:
+            return image_uri[:query]
+        return image_uri
 
     @staticmethod
     def _get_chapter_number(chapter):
