@@ -140,14 +140,14 @@ class MangaSite(object):
     def title(self):
         """Returns the right manga title from user input"""
         # combination of alphanumeric and underscore only is the most used format.
-        # used by: mangafox, mangastream, mangahere
+        # used by: mangafox, mangastream, mangahere, mangatown
         return re.sub(r'[^a-z0-9]+', '_', re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', self.input_title))
 
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
         # this is the most common url for manga title
-        # used by: mangafox, mangastream, mangahere
+        # used by: mangafox, mangastream, mangahere, mangatown
         return "{0}/manga/{1}/".format(self.site_uri, self.title)
 
     @property
@@ -208,8 +208,8 @@ class MangaSite(object):
         """Returns chapter's number"""
         # different for each sites
         # the simplest one is getting the last word from a href section.
-        # used by: animea & mangareader
-        return chapter.text.split(' ')[-1].strip('\n\t')
+        # used by: animea, mangareader, mangatown
+        return chapter.text.strip().split(' ')[-1]
 
     def _get_chapter_name(self, number, location):
         """Returns the appropriate name for the chapter for achive name"""
@@ -232,9 +232,9 @@ class MangaSite(object):
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
         """Returns manga image page url"""
-        # every sites use different format for their urls
-        # this is just a dummy that not used anywhere.
-        return "{0}/{1}".format(chapter_uri, page_number)
+        # every sites use different format for their urls, this is a sample.
+        # used by: mangahere, mangatown
+        return "{0}{1}.html".format(chapter_uri, page_number)
 
     @staticmethod
     def _get_page_number(page_text):
@@ -346,11 +346,6 @@ class MangaHere(MangaSite):
         num = chapter.get('href').split('/')[-2].lstrip('c').lstrip('0')
         return num if num else 0
 
-    @staticmethod
-    def _get_page_uri(chapter_uri, page_number):
-        """Returns manga image page url"""
-        return "{0}{1}.html".format(chapter_uri, page_number)
-
 
 class MangaAnimea(MangaSite):
     """class for manga animea site"""
@@ -419,12 +414,22 @@ class MangaReader(MangaSite):
             return "{0}/{1}".format(chapter_uri, page_number)
 
 
+class MangaTown(MangaSite):
+    """class for mangatown site"""
+    site_uri = "http://www.mangatown.com"
+
+    _chapters_css = "div.chapter_content ul.chapter_list li a"
+    _pages_css = "div.page_select select option"
+    _image_css = "img#image"
+
+
 SITES = dict(animea=MangaAnimea,
              mangable=MangaBle,
              mangafox=MangaFox,
              mangahere=MangaHere,
              mangareader=MangaReader,
-             mangastream=MangaStream)
+             mangastream=MangaStream,
+             mangatown=MangaTown)
 
 
 def uriopen(url):
