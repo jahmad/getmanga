@@ -146,9 +146,9 @@ class MangaSite(object):
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
-        # every sites use different format for their urls
-        # this is just a dummy that not used anywhere.
-        return "{0}/{1}/".format(self.site_uri, self.title)
+        # this is the most common url for manga title
+        # used by: mangafox, mangastream, mangahere
+        return "{0}/manga/{1}/".format(self.site_uri, self.title)
 
     @property
     def chapters(self):
@@ -253,11 +253,6 @@ class MangaFox(MangaSite):
     _pages_css = "#top_bar option"
     _image_css = "img#image"
 
-    @property
-    def title_uri(self):
-        """Returns the index page's url of manga title"""
-        return "{0}/manga/{1}/".format(self.site_uri, self.title)
-
     @staticmethod
     def _get_chapter_number(chapter):
         """Returns chapter's number"""
@@ -285,11 +280,6 @@ class MangaStream(MangaSite):
     _chapters_css = "td a"
     _pages_css = "div.btn-group ul.dropdown-menu li a"
     _image_css = "img#manga-page"
-
-    @property
-    def title_uri(self):
-        """Returns the index page's url of manga title"""
-        return "{0}/manga/{1}/".format(self.site_uri, self.title)
 
     @staticmethod
     def _get_chapter_number(chapter):
@@ -349,11 +339,6 @@ class MangaHere(MangaSite):
     _chapters_css = "div.detail_list ul li a"
     _pages_css = "section.readpage_top div.go_page select option"
     _image_css = "img#image"
-
-    @property
-    def title_uri(self):
-        """Returns the index page's url of manga title"""
-        return "{0}/manga/{1}/".format(self.site_uri, self.title)
 
     @staticmethod
     def _get_chapter_number(chapter):
