@@ -413,7 +413,7 @@ class MangaTown(MangaSite):
     site_uri = "http://www.mangatown.com"
 
     _chapters_css = "div.chapter_content ul.chapter_list li a"
-    _pages_css = "div.page_select select option"
+    _pages_css = "div.manga_read_footer div.page_select select option"
     _image_css = "img#image"
 
 
