@@ -11,7 +11,8 @@ Currently supported sites:
 * mangafox.com
 * mangahere.com
 * mangareader.net
-* mangastream.com
+* ~~mangastream.com~~ _temporarily disabled_
+* mangatown.com
 
 ##Usage:
 * The simplest way:
