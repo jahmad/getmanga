@@ -1,5 +1,5 @@
 # -*- coding: utf8 -*-
-# Copyright (c) 2010-2014, Jamaludin Ahmad
+# Copyright (c) 2010-2015, Jamaludin Ahmad
 # Released subject to the MIT License.
 # Please see http://en.wikipedia.org/wiki/MIT_License
 
@@ -46,13 +46,16 @@ class GetManga(object):
 
     @property
     def chapters(self):
+        """Show a list of available chapters"""
         return self.manga.chapters
 
     @property
     def latest(self):
+        """Show last available chapter"""
         return self.manga.chapters[-1]
 
     def get(self, chapter):
+        """Downloads manga chapter as cbz archive"""
         path = os.path.expanduser(self.path)
         if not os.path.isdir(path):
             try:
@@ -122,6 +125,7 @@ class GetManga(object):
 
 class MangaSite(object):
     site_uri = None
+    # all but mangareader uses descending chapter list
     descending_list = True
 
     _chapters_css = None
@@ -129,21 +133,26 @@ class MangaSite(object):
     _image_css = None
 
     def __init__(self, title):
-        self.input_title = title
+        # all sites only use lowercase title on their urls.
+        self.input_title = title.lower()
 
     @property
     def title(self):
-        """Return the right manga title from user input"""
-        title = self.input_title.lower()
-        return re.sub(r'[^a-z0-9]+', '_', re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', title))
+        """Returns the right manga title from user input"""
+        # combination of alphanumeric and underscore only is the most used format.
+        # used by: mangafox, mangastream, mangahere
+        return re.sub(r'[^a-z0-9]+', '_', re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', self.input_title))
 
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
+        # every sites use different format for their urls
+        # this is just a dummy that not used anywhere.
         return "{0}/{1}/".format(self.site_uri, self.title)
 
     @property
     def chapters(self):
+        """Returns available chapters"""
         content = uriopen(self.title_uri).decode('utf-8')
         doc = html.fromstring(content)
         _chapters = doc.cssselect(self._chapters_css)
@@ -152,15 +161,19 @@ class MangaSite(object):
 
         chapters = []
         for _chapter in _chapters:
+            number = self._get_chapter_number(_chapter)
             location = _chapter.get('href')
-            if self._is_valid_location(location):
-                number = self._get_chapter_number(_chapter)
-                name = self._get_chapter_name(str(number), location)
-                uri = self._get_chapter_uri(location)
-                chapters.append(Chapter(number, name, uri))
-        return chapters
+            name = self._get_chapter_name(str(number), location)
+            uri = self._get_chapter_uri(location)
+            chapters.append(Chapter(number, name, uri))
+
+        if chapters:
+            return chapters
+        else:
+            raise MangaException("There is no chapter available.")
 
     def get_pages(self, chapter_uri):
+        """Returns a list of available pages of a chapter"""
         content = uriopen(chapter_uri).decode('utf-8')
         doc = html.fromstring(content)
         _pages = doc.cssselect(self._pages_css)
@@ -174,10 +187,11 @@ class MangaSite(object):
         return pages
 
     def get_image_uri(self, page_uri):
+        """Returns uri of image from a chapter page"""
         content = uriopen(page_uri).decode('utf-8')
         doc = html.fromstring(content)
         image_uri = doc.cssselect(self._image_css)[0].get('src')
-        # workaround for mangahere
+        # workaround for mangahere which have trailing query on it's image url.
         query = image_uri.find('?')
         if query != -1:
             return image_uri[:query]
@@ -185,10 +199,15 @@ class MangaSite(object):
 
     @staticmethod
     def _get_chapter_number(chapter):
+        """Returns chapter's number"""
+        # different for each sites
+        # the simplest one is getting the last word from a href section.
+        # used by: animea & mangareader
         return chapter.text.split(' ')[-1].strip('\n\t')
 
     def _get_chapter_name(self, number, location):
-        """Returns the appropriate name for the chapter"""
+        """Returns the appropriate name for the chapter for achive name"""
+        # title_vXXcXX.cbz if volume number is available, or else just use title_cXX.cbz.
         try:
             volume = re.search(r'v[0-9]+', location).group()
         except AttributeError:
@@ -197,22 +216,27 @@ class MangaSite(object):
             name = "{0}_{1}c{2}".format(self.title, volume, number.zfill(3))
         return name
 
-    def _get_chapter_uri(self, location):
-        return "{0}{1}".format(self.site_uri, location)
+    @staticmethod
+    def _get_chapter_uri(location):
+        """Returns uri of chapter's first page from location"""
+        # needed because mangareader & animea use relative urls as location on their chapter list,
+        # and the other sites uses absolute one.
+        return location
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
+        """Returns manga image page url"""
+        # every sites use different format for their urls
+        # this is just a dummy that not used anywhere.
         return "{0}/{1}".format(chapter_uri, page_number)
 
     @staticmethod
     def _get_page_number(page_text):
-        if any(['Prev' in page_text, 'Next' in page_text, 'Comments' in page_text]):
-            return None
+        """Returns page number"""
+        # normally page listing from each chapter only has numbers in it, but..
+        # - mangafox has comment section
+        # - mangastream's cssselect return false positive
         return page_text
-
-    @staticmethod
-    def _is_valid_location(location):
-        return True
 
 
 class MangaFox(MangaSite):
@@ -230,12 +254,17 @@ class MangaFox(MangaSite):
 
     @staticmethod
     def _get_chapter_number(chapter):
+        """Returns chapter's number"""
         num = chapter.get('href').split('/')[-2].lstrip('c').lstrip('0')
         return num if num else 0
 
     @staticmethod
-    def _get_chapter_uri(location):
-        return location
+    def _get_page_number(page_text):
+        """Returns page number"""
+        # mangafox has comments section in it's page listing
+        if page_text == 'Comments':
+            return None
+        return page_text
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
@@ -253,27 +282,25 @@ class MangaStream(MangaSite):
 
     @property
     def title_uri(self):
+        """Returns the index page's url of manga title"""
         return "{0}/manga/{1}/".format(self.site_uri, self.title)
 
     @staticmethod
     def _get_chapter_number(chapter):
+        """Returns chapter's number"""
         return chapter.text.split(' - ')[0]
-
-    def _is_valid_location(self, location):
-        return "/{0}/".format(self.title) in location
-
-    @staticmethod
-    def _get_chapter_uri(location):
-        return location
 
     @staticmethod
     def _get_page_number(page_text):
+        """Returns page number"""
+        # page list is not the only dropdown menu on the page, so there are a few false positives.
         if not page_text or page_text == 'Full List':
             return None
         return re.search('[0-9]+', page_text).group(0)
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
+        """Returns manga image page url"""
         return re.sub('[0-9]+$', page_number, chapter_uri)
 
 
@@ -288,15 +315,17 @@ class MangaBle(MangaSite):
     @property
     def title(self):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^\-_a-z0-9]+', '', re.sub(r'\s', '_', self.input_title.lower()))
+        return re.sub(r'[^\-_a-z0-9]+', '', re.sub(r'\s', '_', self.input_title))
+
+    @property
+    def title_uri(self):
+        """Returns the index page's url of manga title"""
+        return "{0}/{1}/".format(self.site_uri, self.title)
 
     @staticmethod
     def _get_chapter_number(chapter):
+        """Returns chapter's number"""
         return chapter.get('href').split('/')[-2].split('-')[-1]
-
-    @staticmethod
-    def _get_chapter_uri(location):
-        return location
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number=None):
@@ -322,12 +351,9 @@ class MangaHere(MangaSite):
 
     @staticmethod
     def _get_chapter_number(chapter):
+        """Returns chapter's number"""
         num = chapter.get('href').split('/')[-2].lstrip('c').lstrip('0')
         return num if num else 0
-
-    @staticmethod
-    def _get_chapter_uri(location):
-        return location
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number):
@@ -339,28 +365,28 @@ class MangaAnimea(MangaSite):
     """class for manga animea site"""
     site_uri = "http://manga.animea.net"
 
-    _chapters_css = "ul.chapters_list li a"
-    _pages_css = "div.topborder select.pageselect option"
-    _image_css = "img.mangaimg"
+    _chapters_css = "ul.chapterlistfull li a"
+    _pages_css = "div.float-left select.pageselect option"
+    _image_css = "img#scanmr"
 
     @property
     def title(self):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^a-z0-9_]+', '-', self.input_title.lower())
+        return re.sub(r'[^a-z0-9_]+', '-', self.input_title)
 
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
         return "{0}/{1}.html?skip=1".format(self.site_uri, self.title)
 
+    def _get_chapter_uri(self, location):
+        """Returns uri of chapter's first page"""
+        return "{0}{1}".format(self.site_uri, location)
+
     @staticmethod
     def _get_page_uri(chapter_uri, page_number=1):
         """Returns manga image page url"""
         return re.sub(r'.html$', '-page-{0}.html'.format(page_number), chapter_uri)
-
-    def _is_valid_location(self, location):
-        """Returns boolean status of a chapter validity"""
-        return self.title in location
 
 
 class MangaReader(MangaSite):
@@ -375,7 +401,7 @@ class MangaReader(MangaSite):
     @property
     def title(self):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^\-a-z0-9]', '', re.sub(r'[ _]', '-', self.input_title.lower()))
+        return re.sub(r'[^\-a-z0-9]', '', re.sub(r'[ _]', '-', self.input_title))
 
     @property
     def title_uri(self):
@@ -387,6 +413,10 @@ class MangaReader(MangaSite):
         except IndexError:
             uri = "{0}/{1}".format(self.site_uri, self.title)
         return uri
+
+    def _get_chapter_uri(self, location):
+        """Returns uri of chapter's first page"""
+        return "{0}{1}".format(self.site_uri, location)
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_number='1'):
@@ -422,7 +452,7 @@ def uriopen(url):
         except HTTPError as msg:
             raise MangaException("HTTP Error: {0} - {1}\n".format(msg.code, url))
         except Exception:
-            #what may goes here: urllib2.URLError, socket.timeout,
+            # what may goes here: urllib2.URLError, socket.timeout,
             #                    httplib.BadStatusLine
             retry += 1
         else:
