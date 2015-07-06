@@ -177,13 +177,19 @@ class MangaSite(object):
         content = uriopen(chapter_uri).decode('utf-8')
         doc = html.fromstring(content)
         _pages = doc.cssselect(self._pages_css)
-        pages = []
+
+        # FIXME: mangastream doesn't show all pages available on page listing
+        _numbers = []
         for _page in _pages:
-            page = self._get_page_number(_page.text)
-            if not page:
+            number = self._get_page_number(_page.text)
+            if not number:
                 continue
-            uri = self._get_page_uri(chapter_uri, page)
-            pages.append(Page(page, uri))
+            _numbers.append(int(number))
+
+        pages = []
+        for number in range(_numbers[0], _numbers[-1] + 1):
+            uri = self._get_page_uri(chapter_uri, str(number))
+            pages.append(Page(str(number), uri))
         return pages
 
     def get_image_uri(self, page_uri):
