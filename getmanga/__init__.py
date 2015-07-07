@@ -223,13 +223,6 @@ class MangaSite(object):
             return "{0}{1}".format(self.site_uri, location)
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_name):
-        """Returns manga image page url"""
-        # every sites use different format for their urls, this is a sample.
-        # used by: mangahere, mangatown
-        return "{0}{1}.html".format(chapter_uri, page_name)
-
-    @staticmethod
     def _get_page_name(page_text):
         """Returns page name from text available"""
         # typical name: page's number, double page (eg. 10-11), or credits
@@ -237,6 +230,13 @@ class MangaSite(object):
         # - mangafox has comment section
         # - mangastream's cssselect return false positive
         return page_text
+
+    @staticmethod
+    def _get_page_uri(chapter_uri, page_name):
+        """Returns manga image page url"""
+        # every sites use different format for their urls, this is a sample.
+        # used by: mangahere, mangatown
+        return "{0}{1}.html".format(chapter_uri, page_name)
 
 
 class MangaHere(MangaSite):
