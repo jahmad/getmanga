@@ -177,11 +177,11 @@ class MangaSite(object):
         _pages = doc.cssselect(self._pages_css)
         pages = []
         for _page in _pages:
-            page = self._get_page_number(_page.text)
-            if not page:
+            name = self._get_page_name(_page.text)
+            if not name:
                 continue
-            uri = self._get_page_uri(chapter_uri, page)
-            pages.append(Page(page, uri))
+            uri = self._get_page_uri(chapter_uri, name)
+            pages.append(Page(name, uri))
         return pages
 
     def get_image_uri(self, page_uri):
@@ -198,7 +198,7 @@ class MangaSite(object):
 
     @staticmethod
     def _get_chapter_number(chapter):
-        """Returns chapter's number"""
+        """Returns chapter's number from a chapter's HtmlElement"""
         # the most common one is getting the last word from a href section.
         # used by: animea, mangafox, mangahere, mangareader, mangatown
         return chapter.text.strip().split(' ')[-1]
@@ -216,22 +216,23 @@ class MangaSite(object):
 
     @staticmethod
     def _get_chapter_uri(location):
-        """Returns uri of chapter's first page from location"""
+        """Returns absolute url of chapter's page from location"""
         # needed because mangareader & animea use relative urls as location on their chapter list,
         # and the other sites uses absolute one.
         return location
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number):
+    def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
         # every sites use different format for their urls, this is a sample.
         # used by: mangahere, mangatown
-        return "{0}{1}.html".format(chapter_uri, page_number)
+        return "{0}{1}.html".format(chapter_uri, page_name)
 
     @staticmethod
-    def _get_page_number(page_text):
-        """Returns page number"""
-        # normally page listing from each chapter only has numbers in it, but..
+    def _get_page_name(page_text):
+        """Returns page name from text available"""
+        # typical name: page's number, double page (eg. 10-11), or credits
+        # normally page listing from each chapter only has it's name in it, but..
         # - mangafox has comment section
         # - mangastream's cssselect return false positive
         return page_text
@@ -246,17 +247,18 @@ class MangaFox(MangaSite):
     _image_css = "img#image"
 
     @staticmethod
-    def _get_page_number(page_text):
-        """Returns page number"""
+    def _get_page_name(page_text):
+        """Returns page name from text available"""
         # mangafox has comments section in it's page listing
         if page_text == 'Comments':
             return None
         return page_text
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number):
+    def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
-        return re.sub(r'[0-9]+.html$', "{0}.html".format(page_number), chapter_uri)
+        # chapter's page already has the first page's name in it.
+        return re.sub(r'[0-9]+.html$', "{0}.html".format(page_name), chapter_uri)
 
 
 class MangaStream(MangaSite):
@@ -269,21 +271,21 @@ class MangaStream(MangaSite):
 
     @staticmethod
     def _get_chapter_number(chapter):
-        """Returns chapter's number"""
+        """Returns chapter's number from a chapter's HtmlElement"""
         return chapter.text.split(' - ')[0]
 
     @staticmethod
-    def _get_page_number(page_text):
-        """Returns page number"""
+    def _get_page_name(page_text):
+        """Returns page name from text available"""
         # page list is not the only dropdown menu on the page, so there are a few false positives.
         if not page_text or page_text == 'Full List':
             return None
         return re.search('[0-9]+', page_text).group(0)
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number):
+    def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
-        return re.sub('[0-9]+$', page_number, chapter_uri)
+        return re.sub('[0-9]+$', page_name, chapter_uri)
 
 
 class MangaBle(MangaSite):
@@ -306,13 +308,13 @@ class MangaBle(MangaSite):
 
     @staticmethod
     def _get_chapter_number(chapter):
-        """Returns chapter's number"""
+        """Returns chapter's number from a chapter's HtmlElement"""
         return chapter.get('href').split('/')[-2].split('-')[-1]
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number):
+    def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
-        return "{0}{1}".format(chapter_uri, page_number)
+        return "{0}{1}".format(chapter_uri, page_name)
 
 
 class MangaHere(MangaSite):
@@ -347,9 +349,9 @@ class MangaAnimea(MangaSite):
         return "{0}{1}".format(self.site_uri, location)
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number):
+    def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
-        return re.sub(r'.html$', '-page-{0}.html'.format(page_number), chapter_uri)
+        return re.sub(r'.html$', '-page-{0}.html'.format(page_name), chapter_uri)
 
 
 class MangaReader(MangaSite):
@@ -382,13 +384,13 @@ class MangaReader(MangaSite):
         return "{0}{1}".format(self.site_uri, location)
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number='1'):
+    def _get_page_uri(chapter_uri, page_name='1'):
         """Returns manga image page url"""
         if chapter_uri.endswith('.html'):
-            page = re.sub(r'\-[0-9]+/', "-{0}/".format(page_number), chapter_uri)
+            page = re.sub(r'\-[0-9]+/', "-{0}/".format(page_name), chapter_uri)
             return "{0}{1}".format(chapter_uri, page)
         else:
-            return "{0}/{1}".format(chapter_uri, page_number)
+            return "{0}/{1}".format(chapter_uri, page_name)
 
 
 class MangaTown(MangaSite):
