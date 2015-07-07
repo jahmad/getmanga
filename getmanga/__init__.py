@@ -133,7 +133,7 @@ class MangaSite(object):
 
     def __init__(self, title):
         # all sites only use lowercase title on their urls.
-        self.input_title = title.lower()
+        self.input_title = title.strip().lower()
 
     @property
     def title(self):
@@ -318,6 +318,7 @@ class MangaBle(MangaSite):
     @property
     def title(self):
         """Returns the right manga title from user input"""
+        # mangable retains hyphen from the original manga title
         return re.sub(r'[^\-_a-z0-9]+', '', re.sub(r'\s', '_', self.input_title))
 
     @property
@@ -328,6 +329,7 @@ class MangaBle(MangaSite):
     @staticmethod
     def _get_chapter_number(chapter):
         """Returns chapter's number from a chapter's HtmlElement"""
+        # chapter.text is got wrapped around a few html tags, it's easier to parse the link
         return chapter.get('href').split('/')[-2].split('-')[-1]
 
     @staticmethod
@@ -347,12 +349,12 @@ class MangaAnimea(MangaSite):
     @property
     def title(self):
         """Returns the right manga title from user input"""
-        return re.sub(r'[^a-z0-9_]+', '-', self.input_title)
+        return re.sub(r'[^a-z0-9]+', '-', self.input_title)
 
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
-        return "{0}/{1}.html?skip=1".format(self.site_uri, self.title)
+        return "{0}/{1}.html".format(self.site_uri, self.title)
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_name):
@@ -377,6 +379,8 @@ class MangaReader(MangaSite):
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
+        # some title's page is in the root, others hidden in a random numeric subdirectory,
+        # so we need to search the manga list to get the correct url.
         try:
             content = uriopen("{0}/alphabetical".format(self.site_uri)).decode('utf-8')
             page = re.findall(r'[0-9]+/' + self.title + '.html', content)[0]
@@ -388,6 +392,8 @@ class MangaReader(MangaSite):
     @staticmethod
     def _get_page_uri(chapter_uri, page_name='1'):
         """Returns manga image page url"""
+        # older stuff, the one in numeric subdirectory, typically named "chapter-X.html",
+        # while the new stuff only use number.
         if chapter_uri.endswith('.html'):
             page = re.sub(r'\-[0-9]+/', "-{0}/".format(page_name), chapter_uri)
             return "{0}{1}".format(chapter_uri, page)
