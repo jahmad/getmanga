@@ -189,7 +189,8 @@ class MangaSite(object):
         content = uriopen(page_uri).decode('utf-8')
         doc = html.fromstring(content)
         image_uri = doc.cssselect(self._image_css)[0].get('src')
-        # workaround for mangahere which have trailing query on it's image url.
+        # mangahere & mangatown have trailing query on it's image url, which make downloading it
+        # failed, strip it here.
         query = image_uri.find('?')
         if query != -1:
             return image_uri[:query]
@@ -198,9 +199,8 @@ class MangaSite(object):
     @staticmethod
     def _get_chapter_number(chapter):
         """Returns chapter's number"""
-        # different for each sites
-        # the simplest one is getting the last word from a href section.
-        # used by: animea, mangareader, mangatown
+        # the most common one is getting the last word from a href section.
+        # used by: animea, mangafox, mangahere, mangareader, mangatown
         return chapter.text.strip().split(' ')[-1]
 
     def _get_chapter_name(self, number, location):
@@ -244,12 +244,6 @@ class MangaFox(MangaSite):
     _chapters_css = "a.tips"
     _pages_css = "#top_bar option"
     _image_css = "img#image"
-
-    @staticmethod
-    def _get_chapter_number(chapter):
-        """Returns chapter's number"""
-        num = chapter.get('href').split('/')[-2].lstrip('c').lstrip('0')
-        return num if num else 0
 
     @staticmethod
     def _get_page_number(page_text):
@@ -328,12 +322,6 @@ class MangaHere(MangaSite):
     _chapters_css = "div.detail_list ul li a"
     _pages_css = "section.readpage_top div.go_page select option"
     _image_css = "img#image"
-
-    @staticmethod
-    def _get_chapter_number(chapter):
-        """Returns chapter's number"""
-        num = chapter.get('href').split('/')[-2].lstrip('c').lstrip('0')
-        return num if num else 0
 
 
 class MangaAnimea(MangaSite):
