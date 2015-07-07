@@ -214,12 +214,13 @@ class MangaSite(object):
             name = "{0}_{1}c{2}".format(self.title, volume, number.zfill(3))
         return name
 
-    @staticmethod
-    def _get_chapter_uri(location):
+    def _get_chapter_uri(self, location):
         """Returns absolute url of chapter's page from location"""
-        # needed because mangareader & animea use relative urls as location on their chapter list,
-        # and the other sites uses absolute one.
-        return location
+        # some sites already use absolute url on their chapter list, some have relative urls.
+        if self.site_uri in location:
+            return location
+        else:
+            return "{0}{1}".format(self.site_uri, location)
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_name):
@@ -353,10 +354,6 @@ class MangaAnimea(MangaSite):
         """Returns the index page's url of manga title"""
         return "{0}/{1}.html?skip=1".format(self.site_uri, self.title)
 
-    def _get_chapter_uri(self, location):
-        """Returns uri of chapter's first page"""
-        return "{0}{1}".format(self.site_uri, location)
-
     @staticmethod
     def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
@@ -387,10 +384,6 @@ class MangaReader(MangaSite):
         except IndexError:
             uri = "{0}/{1}".format(self.site_uri, self.title)
         return uri
-
-    def _get_chapter_uri(self, location):
-        """Returns uri of chapter's first page"""
-        return "{0}{1}".format(self.site_uri, location)
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_name='1'):
