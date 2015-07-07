@@ -95,11 +95,10 @@ class GetManga(object):
             for thread in threads:
                 thread.join()
                 name, image = queue.get()
-                if name:
-                    cbz.writestr(name, image)
-                    progress(len(cbz.filelist), len(pages))
-                else:
+                if not name:
                     raise MangaException(image)
+                cbz.writestr(name, image)
+                progress(len(cbz.filelist), len(pages))
         except Exception as msg:
             cbz.close()
             os.remove(cbz_tmp)
@@ -167,10 +166,9 @@ class MangaSite(object):
             uri = self._get_chapter_uri(location)
             chapters.append(Chapter(number, name, uri))
 
-        if chapters:
-            return chapters
-        else:
+        if not chapters:
             raise MangaException("There is no chapter available.")
+        return chapters
 
     def get_pages(self, chapter_uri):
         """Returns a list of available pages of a chapter"""
@@ -454,10 +452,9 @@ def uriopen(url):
                 compressed = BytesIO(data)
                 data = GzipFile(fileobj=compressed).read()
             response.close()
-    if data:
-        return data
-    else:
+    if not data:
         raise MangaException("Failed to retrieve {0}".format(url))
+    return data
 
 
 def progress(page, total):
