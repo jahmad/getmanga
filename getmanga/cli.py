@@ -28,7 +28,7 @@ def cmdparse():
     parser = argparse.ArgumentParser()
     parser.add_argument('-f', '--file', type=str, help="%(prog)s config file")
     parser.add_argument('title', type=str, help="manga title to download")
-    parser.add_argument('-s', '--site', choices=SITES.keys(), default='mangable',
+    parser.add_argument('-s', '--site', choices=SITES.keys(), default='mangahere',
                         help="manga site to download from")
     group = parser.add_mutually_exclusive_group()
     group.add_argument('-a', '--all', action='store_true', help="download all chapters available")

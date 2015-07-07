@@ -238,6 +238,24 @@ class MangaSite(object):
         return page_text
 
 
+class MangaHere(MangaSite):
+    """class for mangahere site"""
+    site_uri = "http://www.mangahere.com"
+
+    _chapters_css = "div.detail_list ul li a"
+    _pages_css = "section.readpage_top div.go_page select option"
+    _image_css = "img#image"
+
+
+class MangaTown(MangaSite):
+    """class for mangatown site"""
+    site_uri = "http://www.mangatown.com"
+
+    _chapters_css = "div.chapter_content ul.chapter_list li a"
+    _pages_css = "div.manga_read_footer div.page_select select option"
+    _image_css = "img#image"
+
+
 class MangaFox(MangaSite):
     """class for mangafox site"""
     site_uri = "http://mangafox.me"
@@ -317,15 +335,6 @@ class MangaBle(MangaSite):
         return "{0}{1}".format(chapter_uri, page_name)
 
 
-class MangaHere(MangaSite):
-    """class for mangahere site"""
-    site_uri = "http://www.mangahere.com"
-
-    _chapters_css = "div.detail_list ul li a"
-    _pages_css = "section.readpage_top div.go_page select option"
-    _image_css = "img#image"
-
-
 class MangaAnimea(MangaSite):
     """class for manga animea site"""
     site_uri = "http://manga.animea.net"
@@ -391,15 +400,6 @@ class MangaReader(MangaSite):
             return "{0}{1}".format(chapter_uri, page)
         else:
             return "{0}/{1}".format(chapter_uri, page_name)
-
-
-class MangaTown(MangaSite):
-    """class for mangatown site"""
-    site_uri = "http://www.mangatown.com"
-
-    _chapters_css = "div.chapter_content ul.chapter_list li a"
-    _pages_css = "div.manga_read_footer div.page_select select option"
-    _image_css = "img#image"
 
 
 SITES = dict(animea=MangaAnimea,
