@@ -318,12 +318,9 @@ class MangaBle(MangaSite):
         return chapter.get('href').split('/')[-2].split('-')[-1]
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number=None):
+    def _get_page_uri(chapter_uri, page_number):
         """Returns manga image page url"""
-        if page_number:
-            return "{0}{1}".format(chapter_uri, page_number)
-        else:
-            return chapter_uri
+        return "{0}{1}".format(chapter_uri, page_number)
 
 
 class MangaHere(MangaSite):
@@ -364,7 +361,7 @@ class MangaAnimea(MangaSite):
         return "{0}{1}".format(self.site_uri, location)
 
     @staticmethod
-    def _get_page_uri(chapter_uri, page_number=1):
+    def _get_page_uri(chapter_uri, page_number):
         """Returns manga image page url"""
         return re.sub(r'.html$', '-page-{0}.html'.format(page_number), chapter_uri)
 
