@@ -224,11 +224,10 @@ class MangaSite(object):
 
     @staticmethod
     def _get_page_name(page_text):
-        """Returns page name from text available"""
+        """Returns page name from text available or None if it's not a valid page"""
         # typical name: page's number, double page (eg. 10-11), or credits
         # normally page listing from each chapter only has it's name in it, but..
         # - mangafox has comment section
-        # - mangastream's cssselect return false positive
         return page_text
 
     @staticmethod
@@ -259,6 +258,7 @@ class MangaTown(MangaSite):
 
 class MangaFox(MangaSite):
     """class for mangafox site"""
+    # their slogan should be: "we are not the best, but we are the first"
     site_uri = "http://mangafox.me"
 
     _chapters_css = "a.tips"
@@ -282,24 +282,37 @@ class MangaFox(MangaSite):
 
 class MangaStream(MangaSite):
     """class for mangastream site"""
+    # a real scanlation group, not distro sites like the others here,
+    # currently doesn't utilize _get_page_name and override get_pages instead.
     site_uri = "http://mangastream.com"
 
     _chapters_css = "td a"
     _pages_css = "div.btn-group ul.dropdown-menu li a"
     _image_css = "img#manga-page"
 
+    def get_pages(self, chapter_uri):
+        """Returns a list of available pages of a chapter"""
+        content = uriopen(chapter_uri).decode('utf-8')
+        doc = html.fromstring(content)
+        _pages = doc.cssselect(self._pages_css)
+        for _page in _pages:
+            page_text = _page.text
+            if not page_text:
+                continue
+            if 'Last Page' in page_text:
+                last_page = re.search('[0-9]+', page_text).group(0)
+
+        pages = []
+        for num in range(1, int(last_page) + 1):
+            name = str(num)
+            uri = self._get_page_uri(chapter_uri, name)
+            pages.append(Page(name, uri))
+        return pages
+
     @staticmethod
     def _get_chapter_number(chapter):
         """Returns chapter's number from a chapter's HtmlElement"""
         return chapter.text.split(' - ')[0]
-
-    @staticmethod
-    def _get_page_name(page_text):
-        """Returns page name from text available"""
-        # page list is not the only dropdown menu on the page, so there are a few false positives.
-        if not page_text or page_text == 'Full List':
-            return None
-        return re.search('[0-9]+', page_text).group(0)
 
     @staticmethod
     def _get_page_uri(chapter_uri, page_name):
@@ -406,6 +419,7 @@ SITES = dict(animea=MangaAnimea,
              mangafox=MangaFox,
              mangahere=MangaHere,
              mangareader=MangaReader,
+             mangastream=MangaStream,
              mangatown=MangaTown)
 
 

@@ -11,7 +11,7 @@ Currently supported sites:
 * mangafox.com
 * mangahere.com
 * mangareader.net
-* ~~mangastream.com~~ _temporarily disabled_
+* mangastream.com
 * mangatown.com
 
 ##Usage:
@@ -62,7 +62,7 @@ Currently supported sites:
 ##License:
 
 The MIT License:
-Copyright (c) 2010 Jamaludin Ahmad <j.ahmad at gmx.net>
+Copyright (c) 2010-2015 Jamaludin Ahmad <j.ahmad at gmx.net>
 
 Permission is hereby granted, free of charge, to any person obtaining a copy
 of this software and associated documentation files (the "Software"), to deal
