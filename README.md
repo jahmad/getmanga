@@ -8,8 +8,8 @@ Currently supported sites:
 
 * manga.animea.net
 * mangable.com
-* mangafox.com
-* mangahere.com
+* mangafox.me
+* mangahere.co
 * mangareader.net
 * mangastream.com
 * mangatown.com
@@ -20,7 +20,7 @@ Currently supported sites:
   `getmanga {title}`
 
   will download the latest chapter of that title from the default site
-  (mangable.com)
+  (mangahere.co)
 
 * Or if you want to get from specific site:
 
