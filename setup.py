@@ -22,7 +22,7 @@ setup(name='getmanga',
       license='MIT',
       packages=['getmanga'],
       zip_safe=False,
-      install_requires=['lxml', 'cssselect'],
+      install_requires=['requests', 'lxml', 'cssselect'],
       entry_points="""
       [console_scripts]
       getmanga = getmanga.cli:main

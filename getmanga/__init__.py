@@ -24,6 +24,7 @@ from gzip import GzipFile
 from threading import Semaphore, Thread
 from zipfile import ZIP_DEFLATED, ZipFile
 
+import requests
 from lxml import html
 
 
@@ -113,7 +114,7 @@ class GetManga(object):
             semaphore.acquire()
             uri = self.manga.get_image_uri(page.uri)
             name = page.name + os.path.extsep + uri.split('.')[-1]
-            image = uriopen(uri)
+            image = requests.get(uri).content
         except MangaException as msg:
             queue.put((None, msg))
         else:
@@ -152,7 +153,7 @@ class MangaSite(object):
     @property
     def chapters(self):
         """Returns available chapters"""
-        content = uriopen(self.title_uri).decode('utf-8')
+        content = requests.get(self.title_uri).text
         doc = html.fromstring(content)
         _chapters = doc.cssselect(self._chapters_css)
         if self.descending_list:
@@ -172,7 +173,7 @@ class MangaSite(object):
 
     def get_pages(self, chapter_uri):
         """Returns a list of available pages of a chapter"""
-        content = uriopen(chapter_uri).decode('utf-8')
+        content = requests.get(chapter_uri).text
         doc = html.fromstring(content)
         _pages = doc.cssselect(self._pages_css)
         pages = []
@@ -186,7 +187,7 @@ class MangaSite(object):
 
     def get_image_uri(self, page_uri):
         """Returns uri of image from a chapter page"""
-        content = uriopen(page_uri).decode('utf-8')
+        content = requests.get(page_uri).text
         doc = html.fromstring(content)
         image_uri = doc.cssselect(self._image_css)[0].get('src')
         # mangahere & mangatown have trailing query on it's image url, which make downloading it
@@ -292,7 +293,7 @@ class MangaStream(MangaSite):
 
     def get_pages(self, chapter_uri):
         """Returns a list of available pages of a chapter"""
-        content = uriopen(chapter_uri).decode('utf-8')
+        content = requests.get(chapter_uri).text
         doc = html.fromstring(content)
         _pages = doc.cssselect(self._pages_css)
         for _page in _pages:
@@ -395,7 +396,7 @@ class MangaReader(MangaSite):
         # some title's page is in the root, others hidden in a random numeric subdirectory,
         # so we need to search the manga list to get the correct url.
         try:
-            content = uriopen("{0}/alphabetical".format(self.site_uri)).decode('utf-8')
+            content = requests.get("{0}/alphabetical".format(self.site_uri)).text
             page = re.findall(r'[0-9]+/' + self.title + '.html', content)[0]
             uri = "{0}/{1}".format(self.site_uri, page)
         except IndexError:
@@ -421,43 +422,6 @@ SITES = dict(animea=MangaAnimea,
              mangareader=MangaReader,
              mangastream=MangaStream,
              mangatown=MangaTown)
-
-
-def uriopen(url):
-    """Returns data available (html or image file) from a url"""
-    request = Request(url)
-    request.add_header('User-Agent', 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_9_1) '
-                       'AppleWebKit/537.73.11 (KHTML, like Gecko) Version/7.0.1 Safari/537.73.11')
-    request.add_header('Accept-encoding', 'gzip')
-
-    data = None
-    retry = 0
-    while retry < 5:
-        try:
-            response = urlopen(request, timeout=15)
-            data = response.read()
-        except HTTPError as msg:
-            raise MangaException("HTTP Error: {0} - {1}\n".format(msg.code, url))
-        except Exception:
-            # what may goes here: urllib2.URLError, socket.timeout,
-            #                    httplib.BadStatusLine
-            retry += 1
-        else:
-            if 'content-length' in response.headers.keys():
-                if len(data) == int(response.headers.getheader('content-length')):
-                    retry = 5
-                else:
-                    data = None
-                    retry += 1
-            else:
-                retry = 5
-            if ('Content-Encoding', 'gzip') in response.headers.items():
-                compressed = BytesIO(data)
-                data = GzipFile(fileobj=compressed).read()
-            response.close()
-    if not data:
-        raise MangaException("Failed to retrieve {0}".format(url))
-    return data
 
 
 def progress(page, total):
