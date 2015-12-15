@@ -10,17 +10,11 @@ import re
 import sys
 
 if sys.version_info >= (3, 0, 0):
-    from io import BytesIO
-    from urllib.error import HTTPError
-    from urllib.request import Request, urlopen
     from queue import Queue
 else:
-    from cStringIO import StringIO as BytesIO
-    from urllib2 import HTTPError, Request, urlopen
     from Queue import Queue
 
 from collections import namedtuple
-from gzip import GzipFile
 from threading import Semaphore, Thread
 from zipfile import ZIP_DEFLATED, ZipFile
 
