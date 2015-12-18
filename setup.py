@@ -4,7 +4,7 @@ from setuptools import setup
 import sys
 
 
-version = '0.5'
+version = '0.8'
 
 if sys.version_info < (2, 6, 0):
     sys.exit("Python 2.6 or newer is required to run this program.")
