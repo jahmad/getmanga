@@ -135,14 +135,14 @@ class MangaSite(object):
     def title(self):
         """Returns the right manga title from user input"""
         # combination of alphanumeric and underscore only is the most used format.
-        # used by: mangafox, mangastream, mangahere, mangatown
+        # used by: mangafox, mangastream, mangahere
         return re.sub(r'[^a-z0-9]+', '_', re.sub(r'^[^a-z0-9]+|[^a-z0-9]+$', '', self.input_title))
 
     @property
     def title_uri(self):
         """Returns the index page's url of manga title"""
         # this is the most common url for manga title
-        # used by: mangafox, mangastream, mangahere, mangatown
+        # used by: mangafox, mangastream, mangahere
         return "{0}/manga/{1}/".format(self.site_uri, self.title)
 
     @property
@@ -185,7 +185,7 @@ class MangaSite(object):
         content = self.session.get(page_uri).text
         doc = html.fromstring(content)
         image_uri = doc.cssselect(self._image_css)[0].get('src')
-        # mangahere & mangatown have trailing query on it's image url, which make downloading it
+        # mangahere have trailing query on it's image url, which make downloading it
         # failed, strip it here.
         query = image_uri.find('?')
         if query != -1:
@@ -214,7 +214,7 @@ class MangaSite(object):
     def _get_chapter_number(chapter):
         """Returns chapter's number from a chapter's HtmlElement"""
         # the most common one is getting the last word from a href section.
-        # used by: animea, mangafox, mangahere, mangareader, mangatown
+        # used by: animea, mangafox, mangahere, mangareader
         return chapter.text.strip().split(' ')[-1]
 
     def _get_chapter_name(self, number, location):
@@ -248,7 +248,7 @@ class MangaSite(object):
     def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
         # every sites use different format for their urls, this is a sample.
-        # used by: mangahere, mangatown
+        # used by: mangahere
         return "{0}{1}.html".format(chapter_uri, page_name)
 
 
@@ -258,15 +258,6 @@ class MangaHere(MangaSite):
 
     _chapters_css = "div.detail_list ul li a"
     _pages_css = "section.readpage_top div.go_page select option"
-    _image_css = "img#image"
-
-
-class MangaTown(MangaSite):
-    """class for mangatown site"""
-    site_uri = "http://www.mangatown.com"
-
-    _chapters_css = "div.chapter_content ul.chapter_list li a"
-    _pages_css = "div.manga_read_footer div.page_select select option"
     _image_css = "img#image"
 
 
@@ -334,37 +325,6 @@ class MangaStream(MangaSite):
         return re.sub('[0-9]+$', page_name, chapter_uri)
 
 
-class MangaBle(MangaSite):
-    """class for mangable site"""
-    site_uri = "http://mangable.com"
-
-    _chapters_css = "div#newlist ul li a"
-    _pages_css = "div#select_page select option"
-    _image_css = "#image"
-
-    @property
-    def title(self):
-        """Returns the right manga title from user input"""
-        # mangable retains hyphen from the original manga title
-        return re.sub(r'[^\-_a-z0-9]+', '', re.sub(r'\s', '_', self.input_title))
-
-    @property
-    def title_uri(self):
-        """Returns the index page's url of manga title"""
-        return "{0}/{1}/".format(self.site_uri, self.title)
-
-    @staticmethod
-    def _get_chapter_number(chapter):
-        """Returns chapter's number from a chapter's HtmlElement"""
-        # chapter.text is got wrapped around a few html tags, it's easier to parse the link
-        return chapter.get('href').split('/')[-2].split('-')[-1]
-
-    @staticmethod
-    def _get_page_uri(chapter_uri, page_name):
-        """Returns manga image page url"""
-        return "{0}{1}".format(chapter_uri, page_name)
-
-
 class MangaAnimea(MangaSite):
     """class for manga animea site"""
     site_uri = "http://manga.animea.net"
@@ -429,12 +389,10 @@ class MangaReader(MangaSite):
 
 
 SITES = dict(animea=MangaAnimea,
-             mangable=MangaBle,
              mangafox=MangaFox,
              mangahere=MangaHere,
              mangareader=MangaReader,
-             mangastream=MangaStream,
-             mangatown=MangaTown)
+             mangastream=MangaStream)
 
 
 def progress(page, total):

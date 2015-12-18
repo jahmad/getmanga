@@ -7,12 +7,10 @@ and save it to a .cbz format.
 Currently supported sites:
 
 * manga.animea.net
-* mangable.com
 * mangafox.me
 * mangahere.co
 * mangareader.net
 * mangastream.com
-* mangatown.com
 
 ##Usage:
 * The simplest way:
