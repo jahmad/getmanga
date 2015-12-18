@@ -193,7 +193,20 @@ class MangaSite(object):
         return image_uri
 
     def download(self, image_uri):
-        return self.session.get(image_uri).content
+        content = None
+        retry = 0
+        while retry < 5:
+            resp = self.session.get(image_uri)
+            if resp.status_code in [502, 503]:
+                retry += 1
+            elif len(resp.content) != int(resp.headers['content-length']):
+                retry += 1
+            else:
+                retry = 5
+                content = resp.content
+        if not content:
+            raise MangaException("Failed to retrieve {0}".format(image_uri))
+        return content
 
     @staticmethod
     def _get_chapter_number(chapter):
