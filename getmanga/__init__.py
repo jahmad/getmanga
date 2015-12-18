@@ -39,8 +39,6 @@ class GetManga(object):
         self.title = title
         self.manga = SITES[site](title)
 
-        self.session = requests.Session()
-
     @property
     def chapters(self):
         """Show a list of available chapters"""
@@ -110,7 +108,7 @@ class GetManga(object):
             semaphore.acquire()
             uri = self.manga.get_image_uri(page.uri)
             name = page.name + os.path.extsep + uri.split('.')[-1]
-            image = self.session.get(uri).content
+            image = self.manga.download(uri)
         except MangaException as msg:
             queue.put((None, msg))
         else:
@@ -193,6 +191,9 @@ class MangaSite(object):
         if query != -1:
             return image_uri[:query]
         return image_uri
+
+    def download(self, image_uri):
+        return self.session.get(image_uri).content
 
     @staticmethod
     def _get_chapter_number(chapter):
