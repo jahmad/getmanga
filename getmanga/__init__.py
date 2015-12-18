@@ -199,7 +199,7 @@ class MangaSite(object):
             resp = self.session.get(image_uri)
             if str(resp.status_code).startswith('4'):
                 retry = 5
-            if str(resp.status_code).startswith('5'):
+            elif str(resp.status_code).startswith('5'):
                 retry += 1
             elif len(resp.content) != int(resp.headers['content-length']):
                 retry += 1
