@@ -196,16 +196,19 @@ class MangaSite(object):
         content = None
         retry = 0
         while retry < 5:
-            resp = self.session.get(image_uri)
-            if str(resp.status_code).startswith('4'):
-                retry = 5
-            elif str(resp.status_code).startswith('5'):
+            try:
+                resp = self.session.get(image_uri)
+                if str(resp.status_code).startswith('4'):
+                    retry = 5
+                elif str(resp.status_code).startswith('5'):
+                    retry += 1
+                elif len(resp.content) != int(resp.headers['content-length']):
+                    retry += 1
+                else:
+                    retry = 5
+                    content = resp.content
+            except Exception:
                 retry += 1
-            elif len(resp.content) != int(resp.headers['content-length']):
-                retry += 1
-            else:
-                retry = 5
-                content = resp.content
         if not content:
             raise MangaException("Failed to retrieve {0}".format(image_uri))
         return content
