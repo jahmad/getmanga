@@ -190,6 +190,9 @@ class MangaSite(object):
         query = image_uri.find('?')
         if query != -1:
             return image_uri[:query]
+        # use http for mangastream's relative url
+        if image_uri.startswith('//'):
+            return "http:{0}".format(image_uri)
         return image_uri
 
     def download(self, image_uri):
