@@ -107,7 +107,13 @@ class GetManga(object):
         try:
             semaphore.acquire()
             uri = self.manga.get_image_uri(page.uri)
-            name = page.name + os.path.extsep + uri.split('.')[-1]
+            # mangahere & mangatown have token as trailing query on it's image url
+            query = uri.find('?')
+            if query != -1:
+                image_ext = uri[:query].split('.')[-1]
+            else:
+                image_ext = uri.split('.')[-1]
+            name = page.name + os.path.extsep + image_ext
             image = self.manga.download(uri)
         except MangaException as msg:
             queue.put((None, msg))
@@ -185,11 +191,6 @@ class MangaSite(object):
         content = self.session.get(page_uri).text
         doc = html.fromstring(content)
         image_uri = doc.cssselect(self._image_css)[0].get('src')
-        # mangahere & mangatown have trailing query on it's image url, which make downloading it
-        # failed, strip it here.
-        query = image_uri.find('?')
-        if query != -1:
-            return image_uri[:query]
         # use http for mangastream's relative url
         if image_uri.startswith('//'):
             return "http:{0}".format(image_uri)
