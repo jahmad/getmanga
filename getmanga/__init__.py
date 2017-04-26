@@ -226,14 +226,7 @@ class MangaSite(object):
 
     def _get_chapter_name(self, number, location):
         """Returns the appropriate name for the chapter for achive name"""
-        # title_vXXcXX.cbz if volume number is available, or else just use title_cXX.cbz.
-        try:
-            volume = re.search(r'v[0-9]+', location).group()
-        except AttributeError:
-            name = "{0}_c{1}".format(self.title, number.zfill(3))
-        else:
-            name = "{0}_{1}c{2}".format(self.title, volume, number.zfill(3))
-        return name
+        return "{0}_c{1}".format(self.title, number.zfill(3))
 
     def _get_chapter_uri(self, location):
         """Returns absolute url of chapter's page from location"""
