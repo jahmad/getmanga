@@ -125,7 +125,6 @@ class MangaSite(object):
     def __init__(self, title):
         # all sites only use lowercase title on their urls.
         self.input_title = title.strip().lower()
-        self.session = requests.Session()
 
     @property
     def title(self):
@@ -144,7 +143,7 @@ class MangaSite(object):
     @property
     def chapters(self):
         """Returns available chapters"""
-        content = self.session.get(self.title_url).text
+        content = urlopen(self.title_url).text
         doc = html.fromstring(content)
         _chapters = doc.cssselect(self._chapters_css)
         if self.descending_list:
@@ -164,7 +163,7 @@ class MangaSite(object):
 
     def get_pages(self, chapter_url):
         """Returns a list of available pages of a chapter"""
-        content = self.session.get(chapter_url).text
+        content = urlopen(chapter_url).text
         doc = html.fromstring(content)
         _pages = doc.cssselect(self._pages_css)
         pages = []
@@ -178,31 +177,15 @@ class MangaSite(object):
 
     def get_image_url(self, page_url):
         """Returns url of image from a chapter page"""
-        content = self.session.get(page_url).text
+        content = urlopen(page_url).text
         doc = html.fromstring(content)
         image_url = doc.cssselect(self._image_css)[0].get('src')
         return urljoin(self.site_url, image_url)
 
-    def download(self, image_url):
-        content = None
-        retry = 0
-        while retry < 5:
-            try:
-                resp = self.session.get(image_url)
-                if str(resp.status_code).startswith('4'):
-                    retry = 5
-                elif str(resp.status_code).startswith('5'):
-                    retry += 1
-                elif len(resp.content) != int(resp.headers['content-length']):
-                    retry += 1
-                else:
-                    retry = 5
-                    content = resp.content
-            except Exception:
-                retry += 1
-        if not content:
-            raise MangaException("Failed to retrieve {0}".format(image_url))
-        return content
+    @staticmethod
+    def download(image_url):
+        """download manga's image"""
+        return urlopen(image_url).content
 
     @staticmethod
     def _get_chapter_number(chapter):
@@ -292,7 +275,7 @@ class MangaStream(MangaSite):
 
     def get_pages(self, chapter_url):
         """Returns a list of available pages of a chapter"""
-        content = self.session.get(chapter_url).text
+        content = urlopen(chapter_url).text
         doc = html.fromstring(content)
         _pages = doc.cssselect(self._pages_css)
         for _page in _pages:
@@ -340,7 +323,7 @@ class MangaReader(MangaSite):
         # some title's page is in the root, others hidden in a random numeric subdirectory,
         # so we need to search the manga list to get the correct url.
         try:
-            content = self.session.get("{0}/alphabetical".format(self.site_url)).text
+            content = urlopen("{0}/alphabetical".format(self.site_url)).text
             page = re.findall(r'[0-9]+/' + self.title + '.html', content)[0]
             url = "{0}/{1}".format(self.site_url, page)
         except IndexError:
@@ -364,6 +347,30 @@ SITES = dict(mangafox=MangaFox,
              mangareader=MangaReader,
              mangastream=MangaStream,
              mangatown=MangaTown)
+
+
+def urlopen(url):
+    headers = {'User-Agent': 'Mozilla/5.0 (Macintosh; Intel Mac OS X 10_13_2) AppleWebKit/537.36 \
+                              (KHTML, like Gecko) Chrome/63.0.3239.108 Safari/537.36'}
+
+    retry = 0
+    while retry < 5:
+        try:
+            resp = requests.get(url, timeout=5, headers=headers)
+            if 400 <= resp.status_code < 500:
+                retry = 5
+            elif 500 <= resp.status_code < 600:
+                retry += 1
+            elif 'content-length' in resp.headers and \
+                 len(resp.content) != int(resp.headers['content-length']):
+                retry += 1
+            else:
+                retry = 5
+        except Exception:
+            retry += 1
+    if not resp.content:
+        raise MangaException("Failed to retrieve {0}".format(url))
+    return resp
 
 
 def progress(page, total):
