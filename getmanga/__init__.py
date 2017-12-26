@@ -7,9 +7,10 @@ import os
 import re
 import sys
 
-from queue import Queue
 from collections import namedtuple
+from queue import Queue
 from threading import Semaphore, Thread
+from urllib.parse import urljoin
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import requests
@@ -185,10 +186,7 @@ class MangaSite(object):
         content = self.session.get(page_url).text
         doc = html.fromstring(content)
         image_url = doc.cssselect(self._image_css)[0].get('src')
-        # use http for mangastream's relative url
-        if image_url.startswith('//'):
-            return "http:{0}".format(image_url)
-        return image_url
+        return urljoin(self.site_url, image_url)
 
     def download(self, image_url):
         content = None
@@ -224,11 +222,7 @@ class MangaSite(object):
 
     def _get_chapter_url(self, location):
         """Returns absolute url of chapter's page from location"""
-        # some sites already use absolute url on their chapter list, some have relative urls.
-        if location.startswith('http://'):
-            return location
-        else:
-            return "{0}{1}".format(self.site_url, location)
+        return urljoin(self.site_url, location)
 
     @staticmethod
     def _get_page_name(page_text):
