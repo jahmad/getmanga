@@ -215,7 +215,7 @@ class MangaSite(object):
     def _get_chapter_number(chapter):
         """Returns chapter's number from a chapter's HtmlElement"""
         # the most common one is getting the last word from a href section.
-        # used by: animea, mangafox, mangahere, mangareader, mangatown
+        # used by: mangafox, mangahere, mangareader, mangatown
         return chapter.text.strip().split(' ')[-1]
 
     def _get_chapter_name(self, number, location):
@@ -248,7 +248,7 @@ class MangaSite(object):
 
 class MangaHere(MangaSite):
     """class for mangahere site"""
-    site_uri = "http://www.mangahere.co"
+    site_uri = "http://www.mangahere.cc"
 
     _chapters_css = "div.detail_list ul li a"
     _pages_css = "section.readpage_top div.go_page select option"
@@ -267,7 +267,7 @@ class MangaTown(MangaSite):
 class MangaFox(MangaSite):
     """class for mangafox site"""
     # their slogan should be: "we are not the best, but we are the first"
-    site_uri = "http://mangafox.me"
+    site_uri = "http://mangafox.la"
 
     _chapters_css = "a.tips"
     _pages_css = "#top_bar option"
@@ -292,7 +292,7 @@ class MangaStream(MangaSite):
     """class for mangastream site"""
     # a real scanlation group, not distro sites like the others here,
     # currently doesn't utilize _get_page_name and override get_pages instead.
-    site_uri = "http://mangastream.com"
+    site_uri = "https://readms.net"
 
     _chapters_css = "td a"
     _pages_css = "div.btn-group ul.dropdown-menu li a"
@@ -326,30 +326,6 @@ class MangaStream(MangaSite):
     def _get_page_uri(chapter_uri, page_name):
         """Returns manga image page url"""
         return re.sub('[0-9]+$', page_name, chapter_uri)
-
-
-class MangaAnimea(MangaSite):
-    """class for manga animea site"""
-    site_uri = "http://manga.animea.net"
-
-    _chapters_css = "ul.chapterlistfull li a"
-    _pages_css = "div.float-left select.pageselect option"
-    _image_css = "img#scanmr"
-
-    @property
-    def title(self):
-        """Returns the right manga title from user input"""
-        return re.sub(r'[^a-z0-9]+', '-', self.input_title)
-
-    @property
-    def title_uri(self):
-        """Returns the index page's url of manga title"""
-        return "{0}/{1}.html".format(self.site_uri, self.title)
-
-    @staticmethod
-    def _get_page_uri(chapter_uri, page_name):
-        """Returns manga image page url"""
-        return re.sub(r'.html$', '-page-{0}.html'.format(page_name), chapter_uri)
 
 
 class MangaReader(MangaSite):
@@ -391,8 +367,7 @@ class MangaReader(MangaSite):
             return "{0}/{1}".format(chapter_uri, page_name)
 
 
-SITES = dict(animea=MangaAnimea,
-             mangafox=MangaFox,
+SITES = dict(mangafox=MangaFox,
              mangahere=MangaHere,
              mangareader=MangaReader,
              mangastream=MangaStream,

@@ -6,9 +6,8 @@ and save it to a .cbz format.
 
 Currently supported sites:
 
-* manga.animea.net
-* mangafox.me
-* mangahere.co
+* mangafox.la
+* mangahere.cc
 * mangareader.net
 * mangastream.com
 * mangatown.com
@@ -25,7 +24,7 @@ Currently supported sites:
 
   `getmanga {title} -s {site}`
 
-  example: `getmanga 'fairy tail' -s animea`
+  example: `getmanga 'fairy tail' -s mangatown`
 
 * Download all chapters of a title:
 
