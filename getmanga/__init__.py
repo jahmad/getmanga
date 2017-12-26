@@ -1,19 +1,13 @@
 # -*- coding: utf8 -*-
-# Copyright (c) 2010-2015, Jamaludin Ahmad
+# Copyright (c) 2010-2017, Jamaludin Ahmad
 # Released subject to the MIT License.
 # Please see http://en.wikipedia.org/wiki/MIT_License
-
-from __future__ import division
 
 import os
 import re
 import sys
 
-if sys.version_info >= (3, 0, 0):
-    from queue import Queue
-else:
-    from Queue import Queue
-
+from queue import Queue
 from collections import namedtuple
 from threading import Semaphore, Thread
 from zipfile import ZIP_DEFLATED, ZipFile

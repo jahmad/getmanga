@@ -1,13 +1,13 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 
 from setuptools import setup
 import sys
 
 
-version = '0.8'
+version = '0.10'
 
-if sys.version_info < (2, 6, 0):
-    sys.exit("Python 2.6 or newer is required to run this program.")
+if sys.version_info < (3, 2, 0):
+    sys.exit("Python 3.2 or newer is required to run this program.")
 
 setup(name='getmanga',
       version=version,

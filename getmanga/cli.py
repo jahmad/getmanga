@@ -1,21 +1,13 @@
 # -*- coding: utf8 -*-
-# Copyright (c) 2010-2014, Jamaludin Ahmad
+# Copyright (c) 2010-2017, Jamaludin Ahmad
 # Released subject to the MIT License.
 # Please see http://en.wikipedia.org/wiki/MIT_License
 
 import os
 import sys
-try:
-    import configparser
-except ImportError:
-    import ConfigParser as configparser
-
+import configparser
 import pkg_resources
-
-try:
-    import argparse
-except ImportError:
-    sys.exit('You need to have "argparse" module installed to run this script')
+import argparse
 
 from getmanga import SITES, MangaException, GetManga
 
