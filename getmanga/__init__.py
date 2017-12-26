@@ -10,7 +10,7 @@ import sys
 from collections import namedtuple
 from queue import Queue
 from threading import Semaphore, Thread
-from urllib.parse import urljoin
+from urllib.parse import urljoin, urlparse
 from zipfile import ZIP_DEFLATED, ZipFile
 
 import requests
@@ -102,12 +102,7 @@ class GetManga(object):
         try:
             semaphore.acquire()
             url = self.manga.get_image_url(page.url)
-            # mangahere & mangatown have token as trailing query on it's image url
-            query = url.find('?')
-            if query != -1:
-                image_ext = url[:query].split('.')[-1]
-            else:
-                image_ext = url.split('.')[-1]
+            image_ext = urlparse(url).path.split('.')[-1]
             name = page.name + os.path.extsep + image_ext
             image = self.manga.download(url)
         except MangaException as msg:
