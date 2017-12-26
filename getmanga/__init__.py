@@ -230,6 +230,9 @@ class MangaSite(object):
         # typical name: page's number, double page (eg. 10-11), or credits
         # normally page listing from each chapter only has it's name in it, but..
         # - mangafox has comment section
+        # - mangatown & mangahere has advertisement on featured page.
+        if page_text == 'Featured':
+            return None
         return page_text
 
     @staticmethod
